@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="534" viewBox="0 0 800 534">
+  <!-- Cover of the AirNow integration for Gladys Assistant (illustration, not
+       the logo of AirNow nor of the EPA). A city skyline in a hazy evening
+       sky, under a dial of the Air Quality Index in the six colors of the EPA
+       scale. Built into cover.jpg by scripts/build-cover.sh. -->
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1d3557"/>
+      <stop offset="0.55" stop-color="#457b9d"/>
+      <stop offset="1" stop-color="#e9c46a"/>
+    </linearGradient>
+    <linearGradient id="haze" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0"/>
+      <stop offset="1" stop-color="#f4e3c1" stop-opacity="0.55"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="534" fill="url(#sky)"/>
+
+  <!-- the skyline -->
+  <g fill="#14213d">
+    <path d="M0 534 V440 H40 V400 H80 V430 H110 V360 H150 V420 H185 V390 H215 V330 H240 V310 H262 V330 H285 V410 H320 V380 H350 V420 H390 V350 H420 V300 H450 V350 H480 V420 H520 V390 H560 V340 H600 V400 H630 V370 H670 V420 H710 V380 H750 V430 H800 V534 Z"/>
+  </g>
+  <g fill="#f6d365" opacity="0.75">
+    <rect x="122" y="372" width="8" height="10"/><rect x="134" y="390" width="8" height="10"/>
+    <rect x="224" y="342" width="8" height="10"/><rect x="246" y="356" width="8" height="10"/>
+    <rect x="428" y="314" width="8" height="10"/><rect x="428" y="334" width="8" height="10"/>
+    <rect x="570" y="356" width="8" height="10"/><rect x="584" y="372" width="8" height="10"/>
+  </g>
+  <rect y="300" width="800" height="234" fill="url(#haze)"/>
+
+  <!-- the AQI dial: six arcs, 0 to 500 -->
+  <g transform="translate(590 250)" fill="none" stroke-width="34" stroke-linecap="butt">
+    <path d="M-150 0 A150 150 0 0 1 -129.9 -75" stroke="#00e400"/>
+    <path d="M-129.9 -75 A150 150 0 0 1 -75 -129.9" stroke="#ffff00"/>
+    <path d="M-75 -129.9 A150 150 0 0 1 0 -150" stroke="#ff7e00"/>
+    <path d="M0 -150 A150 150 0 0 1 75 -129.9" stroke="#ff0000"/>
+    <path d="M75 -129.9 A150 150 0 0 1 129.9 -75" stroke="#8f3f97"/>
+    <path d="M129.9 -75 A150 150 0 0 1 150 0" stroke="#7e0023"/>
+  </g>
+  <g transform="translate(590 250)">
+    <path d="M0 0 L-104 -60" stroke="#ffffff" stroke-width="8" stroke-linecap="round"/>
+    <circle r="16" fill="#ffffff"/>
+    <text y="62" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif" font-size="46" font-weight="bold" fill="#ffffff">42</text>
+    <text y="94" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif" font-size="20" fill="#e8eef7">AQI · Good</text>
+  </g>
+
+  <!-- the title -->
+  <g font-family="DejaVu Sans, Arial, sans-serif">
+    <text x="48" y="110" font-size="70" font-weight="bold" fill="#ffffff">AirNow</text>
+    <text x="52" y="152" font-size="26" fill="#dbe7f5">for Gladys Assistant</text>
+    <text x="52" y="196" font-size="19" fill="#c3d4ea">Air Quality Index · forecast · alerts</text>
+  </g>
+</svg>

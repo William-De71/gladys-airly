@@ -1,0 +1,1158 @@
+{
+  "manifest_version": 1,
+  "type": "device",
+  "name": "Airly",
+  "description": {
+    "en": "Airly air quality: CAQI, PM1, PM2.5, PM10, weather and 24-hour forecast for your places.",
+    "fr": "Qualité de l’air Airly : CAQI, PM1, PM2,5, PM10, météo et prévision 24 h de vos lieux.",
+    "de": "Airly-Luftqualität: CAQI, PM1, PM2,5, PM10, Wetter und 24-Std.-Vorhersage deiner Orte.",
+    "es": "Calidad del aire de Airly: CAQI, PM1, PM2,5, PM10, tiempo y previsión 24 h de sus lugares."
+  },
+  "version": "0.1.0",
+  "docker_image": "ghcr.io/william-de71/gladys-airly:0.1.0",
+  "gladys_version": ">=5.2.0",
+  "categories": ["environment"],
+  "cover_image": "https://raw.githubusercontent.com/William-De71/gladys-airly/main/cover.jpg",
+  "transports": ["cloud"],
+  "location": true,
+  "config_schema": [
+    {
+      "key": "intro",
+      "type": "section",
+      "label": {
+        "en": "Airly API key",
+        "fr": "Clé d’API Airly",
+        "de": "Airly-API-Schlüssel",
+        "es": "Clave de API de Airly"
+      },
+      "description": {
+        "en": "Airly runs a network of air quality sensors, mostly in Poland and across Europe: PM1, PM2.5, PM10, often the weather, sometimes gases, and a 24-hour forecast. Its API needs a free key (100 requests a day): create an account on the Airly developer portal, then copy the key of the Free plan. The integration shares the requests among your places by itself.",
+        "fr": "Airly exploite un réseau de capteurs de qualité de l’air, surtout en Pologne et en Europe : PM1, PM2,5, PM10, souvent la météo, parfois des gaz, et une prévision sur 24 heures. Son API demande une clé gratuite (100 requêtes par jour) : créez un compte sur le portail développeur d’Airly, puis copiez la clé de l’offre gratuite. L’intégration répartit d’elle-même les requêtes entre vos lieux.",
+        "de": "Airly betreibt ein Netz von Luftqualitätssensoren, vor allem in Polen und in Europa: PM1, PM2,5, PM10, oft das Wetter, manchmal Gase, und eine 24-Stunden-Vorhersage. Die API braucht einen kostenlosen Schlüssel (100 Anfragen pro Tag): Lege ein Konto im Entwicklerportal von Airly an und kopiere den Schlüssel des kostenlosen Tarifs. Die Integration verteilt die Anfragen selbst auf deine Orte.",
+        "es": "Airly gestiona una red de sensores de calidad del aire, sobre todo en Polonia y en Europa: PM1, PM2,5, PM10, a menudo el tiempo, a veces gases, y una previsión de 24 horas. Su API necesita una clave gratuita (100 solicitudes al día): cree una cuenta en el portal para desarrolladores de Airly y copie la clave del plan gratuito. La integración reparte por sí misma las solicitudes entre sus lugares."
+      },
+      "links": [
+        {
+          "url": "https://developer.airly.org/en",
+          "label": {
+            "en": "Airly developer portal",
+            "fr": "Portail développeur Airly",
+            "de": "Airly-Entwicklerportal",
+            "es": "Portal para desarrolladores de Airly"
+          }
+        },
+        {
+          "url": "https://airly.org/map/en/",
+          "label": {
+            "en": "Map of the Airly sensors",
+            "fr": "Carte des capteurs Airly",
+            "de": "Karte der Airly-Sensoren",
+            "es": "Mapa de los sensores Airly"
+          }
+        }
+      ]
+    },
+    {
+      "key": "api_key",
+      "type": "secret",
+      "required": true,
+      "label": {
+        "en": "API key",
+        "fr": "Clé d’API",
+        "de": "API-Schlüssel",
+        "es": "Clave de API"
+      }
+    },
+    {
+      "key": "places",
+      "type": "section",
+      "label": {
+        "en": "Place 1",
+        "fr": "Lieu 1",
+        "de": "Ort 1",
+        "es": "Lugar 1"
+      },
+      "description": {
+        "en": "A house of Gladys (its location), or the number of an Airly sensor, which wins over the house.",
+        "fr": "Une maison de Gladys (sa position), ou le numéro d’un capteur Airly, qui l’emporte sur la maison.",
+        "de": "Ein Haus von Gladys (sein Standort) oder die Nummer eines Airly-Sensors, die Vorrang vor dem Haus hat.",
+        "es": "Una casa de Gladys (su ubicación), o el número de un sensor Airly, que prevalece sobre la casa."
+      }
+    },
+    {
+      "key": "house_1",
+      "type": "select",
+      "source": "houses",
+      "label": {
+        "en": "House",
+        "fr": "Maison",
+        "de": "Haus",
+        "es": "Casa"
+      }
+    },
+    {
+      "key": "installation_1",
+      "type": "string",
+      "label": {
+        "en": "Or an Airly sensor number",
+        "fr": "Ou un numéro de capteur Airly",
+        "de": "Oder eine Airly-Sensornummer",
+        "es": "O un número de sensor Airly"
+      },
+      "placeholder": {
+        "en": "204",
+        "fr": "204",
+        "de": "204",
+        "es": "204"
+      }
+    },
+    {
+      "key": "place_2_section",
+      "type": "section",
+      "label": {
+        "en": "Place 2",
+        "fr": "Lieu 2",
+        "de": "Ort 2",
+        "es": "Lugar 2"
+      },
+      "description": {
+        "en": "A house of Gladys (its location), or the number of an Airly sensor, which wins over the house.",
+        "fr": "Une maison de Gladys (sa position), ou le numéro d’un capteur Airly, qui l’emporte sur la maison.",
+        "de": "Ein Haus von Gladys (sein Standort) oder die Nummer eines Airly-Sensors, die Vorrang vor dem Haus hat.",
+        "es": "Una casa de Gladys (su ubicación), o el número de un sensor Airly, que prevalece sobre la casa."
+      }
+    },
+    {
+      "key": "house_2",
+      "type": "select",
+      "source": "houses",
+      "label": {
+        "en": "House",
+        "fr": "Maison",
+        "de": "Haus",
+        "es": "Casa"
+      }
+    },
+    {
+      "key": "installation_2",
+      "type": "string",
+      "label": {
+        "en": "Or an Airly sensor number",
+        "fr": "Ou un numéro de capteur Airly",
+        "de": "Oder eine Airly-Sensornummer",
+        "es": "O un número de sensor Airly"
+      },
+      "placeholder": {
+        "en": "204",
+        "fr": "204",
+        "de": "204",
+        "es": "204"
+      }
+    },
+    {
+      "key": "place_3_section",
+      "type": "section",
+      "label": {
+        "en": "Place 3",
+        "fr": "Lieu 3",
+        "de": "Ort 3",
+        "es": "Lugar 3"
+      },
+      "description": {
+        "en": "A house of Gladys (its location), or the number of an Airly sensor, which wins over the house.",
+        "fr": "Une maison de Gladys (sa position), ou le numéro d’un capteur Airly, qui l’emporte sur la maison.",
+        "de": "Ein Haus von Gladys (sein Standort) oder die Nummer eines Airly-Sensors, die Vorrang vor dem Haus hat.",
+        "es": "Una casa de Gladys (su ubicación), o el número de un sensor Airly, que prevalece sobre la casa."
+      }
+    },
+    {
+      "key": "house_3",
+      "type": "select",
+      "source": "houses",
+      "label": {
+        "en": "House",
+        "fr": "Maison",
+        "de": "Haus",
+        "es": "Casa"
+      }
+    },
+    {
+      "key": "installation_3",
+      "type": "string",
+      "label": {
+        "en": "Or an Airly sensor number",
+        "fr": "Ou un numéro de capteur Airly",
+        "de": "Oder eine Airly-Sensornummer",
+        "es": "O un número de sensor Airly"
+      },
+      "placeholder": {
+        "en": "204",
+        "fr": "204",
+        "de": "204",
+        "es": "204"
+      }
+    },
+    {
+      "key": "options",
+      "type": "section",
+      "label": {
+        "en": "Options",
+        "fr": "Options",
+        "de": "Optionen",
+        "es": "Opciones"
+      }
+    },
+    {
+      "key": "house_mode",
+      "type": "select",
+      "default": "point",
+      "label": {
+        "en": "Air quality of a house",
+        "fr": "Qualité de l’air d’une maison",
+        "de": "Luftqualität eines Hauses",
+        "es": "Calidad del aire de una casa"
+      },
+      "description": {
+        "en": "Airly can interpolate the air quality at the location of the house from the sensors around, or give the values of the nearest sensor (3 km at most).",
+        "fr": "Airly peut interpoler la qualité de l’air à la position de la maison à partir des capteurs voisins, ou donner les valeurs du capteur le plus proche (3 km au plus).",
+        "de": "Airly kann die Luftqualität am Standort des Hauses aus den umliegenden Sensoren interpolieren oder die Werte des nächsten Sensors liefern (höchstens 3 km).",
+        "es": "Airly puede interpolar la calidad del aire en la ubicación de la casa a partir de los sensores cercanos, o dar los valores del sensor más cercano (3 km como máximo)."
+      },
+      "options": [
+        {
+          "value": "point",
+          "label": {
+            "en": "At the location of the house",
+            "fr": "À la position de la maison",
+            "de": "Am Standort des Hauses",
+            "es": "En la ubicación de la casa"
+          }
+        },
+        {
+          "value": "nearest",
+          "label": {
+            "en": "Nearest sensor",
+            "fr": "Capteur le plus proche",
+            "de": "Nächster Sensor",
+            "es": "Sensor más cercano"
+          }
+        }
+      ]
+    },
+    {
+      "key": "language",
+      "type": "select",
+      "default": "auto",
+      "label": {
+        "en": "Language of the texts",
+        "fr": "Langue des textes",
+        "de": "Sprache der Texte",
+        "es": "Idioma de los textos"
+      },
+      "description": {
+        "en": "Names of the devices and texts of the scenes. Automatic: the language of the dashboard.",
+        "fr": "Noms des appareils et textes des scènes. Automatique : la langue du tableau de bord.",
+        "de": "Namen der Geräte und Texte der Szenen. Automatisch: die Sprache des Dashboards.",
+        "es": "Nombres de los dispositivos y textos de las escenas. Automático: el idioma del panel."
+      },
+      "options": [
+        {
+          "value": "auto",
+          "label": {
+            "en": "Automatic",
+            "fr": "Automatique",
+            "de": "Automatisch",
+            "es": "Automático"
+          }
+        },
+        {
+          "value": "en",
+          "label": {
+            "en": "English",
+            "fr": "English",
+            "de": "English",
+            "es": "English"
+          }
+        },
+        {
+          "value": "fr",
+          "label": {
+            "en": "Français",
+            "fr": "Français",
+            "de": "Français",
+            "es": "Français"
+          }
+        },
+        {
+          "value": "de",
+          "label": {
+            "en": "Deutsch",
+            "fr": "Deutsch",
+            "de": "Deutsch",
+            "es": "Deutsch"
+          }
+        },
+        {
+          "value": "es",
+          "label": {
+            "en": "Español",
+            "fr": "Español",
+            "de": "Español",
+            "es": "Español"
+          }
+        }
+      ]
+    }
+  ],
+  "actions": [
+    {
+      "key": "read_now",
+      "timeout_seconds": 60,
+      "label": {
+        "en": "Read now",
+        "fr": "Lire maintenant",
+        "de": "Jetzt lesen",
+        "es": "Leer ahora"
+      },
+      "description": {
+        "en": "Checks the key, locates the places and reads them now (one request per place).",
+        "fr": "Vérifie la clé, situe les lieux et les lit tout de suite (une requête par lieu).",
+        "de": "Prüft den Schlüssel, ermittelt die Orte und liest sie sofort (eine Anfrage pro Ort).",
+        "es": "Comprueba la clave, sitúa los lugares y los lee ahora (una solicitud por lugar)."
+      }
+    },
+    {
+      "key": "diagnostic",
+      "label": {
+        "en": "Diagnostic",
+        "fr": "Diagnostic",
+        "de": "Diagnose",
+        "es": "Diagnóstico"
+      },
+      "description": {
+        "en": "Writes the state of the integration to its logs, without the key nor the coordinates.",
+        "fr": "Écrit l’état de l’intégration dans ses journaux, sans la clé ni les coordonnées.",
+        "de": "Schreibt den Zustand der Integration in ihre Logs, ohne den Schlüssel und die Koordinaten.",
+        "es": "Escribe el estado de la integración en sus registros, sin la clave ni las coordenadas."
+      }
+    }
+  ],
+  "widgets": [
+    {
+      "key": "air_quality",
+      "icon": "wind",
+      "action_timeout_seconds": 60,
+      "label": {
+        "en": "Airly air quality",
+        "fr": "Qualité de l’air Airly",
+        "de": "Airly-Luftqualität",
+        "es": "Calidad del aire Airly"
+      },
+      "description": {
+        "en": "The CAQI now, PM1, PM2.5, PM10 and the temperature, with an advice.",
+        "fr": "Le CAQI actuel, PM1, PM2,5, PM10 et la température, avec un conseil.",
+        "de": "Der aktuelle CAQI, PM1, PM2,5, PM10 und die Temperatur, mit einem Rat.",
+        "es": "El CAQI actual, PM1, PM2,5, PM10 y la temperatura, con un consejo."
+      },
+      "settings": [
+        {
+          "key": "place",
+          "type": "select",
+          "source": "devices",
+          "label": {
+            "en": "Place",
+            "fr": "Lieu",
+            "de": "Ort",
+            "es": "Lugar"
+          },
+          "description": {
+            "en": "An Airly device. Leave empty for the first place.",
+            "fr": "Un appareil Airly. Laissez vide pour le premier lieu.",
+            "de": "Ein Airly-Gerät. Leer lassen für den ersten Ort.",
+            "es": "Un dispositivo Airly. Déjelo vacío para el primer lugar."
+          },
+          "required": false
+        }
+      ]
+    },
+    {
+      "key": "forecast",
+      "icon": "trending-up",
+      "action_timeout_seconds": 60,
+      "label": {
+        "en": "Airly forecast",
+        "fr": "Prévision Airly",
+        "de": "Airly-Vorhersage",
+        "es": "Previsión Airly"
+      },
+      "description": {
+        "en": "The CAQI of the last 24 hours and of the next 24 hours on one chart.",
+        "fr": "Le CAQI des 24 dernières heures et des 24 prochaines sur un graphique.",
+        "de": "Der CAQI der letzten und der nächsten 24 Stunden in einem Diagramm.",
+        "es": "El CAQI de las últimas 24 horas y de las próximas 24 en un gráfico."
+      },
+      "settings": [
+        {
+          "key": "place",
+          "type": "select",
+          "source": "devices",
+          "label": {
+            "en": "Place",
+            "fr": "Lieu",
+            "de": "Ort",
+            "es": "Lugar"
+          },
+          "description": {
+            "en": "An Airly device. Leave empty for the first place.",
+            "fr": "Un appareil Airly. Laissez vide pour le premier lieu.",
+            "de": "Ein Airly-Gerät. Leer lassen für den ersten Ort.",
+            "es": "Un dispositivo Airly. Déjelo vacío para el primer lugar."
+          },
+          "required": false
+        }
+      ]
+    }
+  ],
+  "scene_triggers": [
+    {
+      "key": "air_quality_changed",
+      "label": {
+        "en": "Airly: air quality changed",
+        "fr": "Airly : qualité de l’air changée",
+        "de": "Airly: Luftqualität geändert",
+        "es": "Airly: cambio de calidad del aire"
+      },
+      "description": {
+        "en": "The CAQI level now changes (Good → Moderate…), worse or better.",
+        "fr": "Le niveau du CAQI change (Bonne → Moyenne…), en pire ou en mieux.",
+        "de": "Die Stufe des CAQI ändert sich (Gut → Mäßig…), schlechter oder besser.",
+        "es": "El nivel del CAQI cambia (Buena → Moderada…), a peor o a mejor."
+      },
+      "fields": [
+        {
+          "key": "place",
+          "type": "select",
+          "source": "devices",
+          "label": {
+            "en": "Place",
+            "fr": "Lieu",
+            "de": "Ort",
+            "es": "Lugar"
+          },
+          "description": {
+            "en": "An Airly device. Leave empty for any place.",
+            "fr": "Un appareil Airly. Laissez vide pour tous les lieux.",
+            "de": "Ein Airly-Gerät. Leer lassen für alle Orte.",
+            "es": "Un dispositivo Airly. Déjelo vacío para cualquier lugar."
+          },
+          "required": false
+        },
+        {
+          "key": "level",
+          "type": "multi_select",
+          "label": {
+            "en": "Level",
+            "fr": "Niveau",
+            "de": "Stufe",
+            "es": "Nivel"
+          },
+          "description": {
+            "en": "The new level. Leave empty for any.",
+            "fr": "Le nouveau niveau. Laissez vide pour tous.",
+            "de": "Die neue Stufe. Leer lassen für jede.",
+            "es": "El nuevo nivel. Déjelo vacío para cualquiera."
+          },
+          "options": [
+            {
+              "value": "very_low",
+              "label": {
+                "en": "Very good",
+                "fr": "Très bonne",
+                "de": "Sehr gut",
+                "es": "Muy buena"
+              }
+            },
+            {
+              "value": "low",
+              "label": {
+                "en": "Good",
+                "fr": "Bonne",
+                "de": "Gut",
+                "es": "Buena"
+              }
+            },
+            {
+              "value": "medium",
+              "label": {
+                "en": "Moderate",
+                "fr": "Moyenne",
+                "de": "Mäßig",
+                "es": "Moderada"
+              }
+            },
+            {
+              "value": "high",
+              "label": {
+                "en": "Poor",
+                "fr": "Mauvaise",
+                "de": "Schlecht",
+                "es": "Mala"
+              }
+            },
+            {
+              "value": "very_high",
+              "label": {
+                "en": "Very poor",
+                "fr": "Très mauvaise",
+                "de": "Sehr schlecht",
+                "es": "Muy mala"
+              }
+            }
+          ]
+        },
+        {
+          "key": "direction",
+          "type": "select",
+          "label": {
+            "en": "Direction",
+            "fr": "Sens",
+            "de": "Richtung",
+            "es": "Sentido"
+          },
+          "description": {
+            "en": "Leave empty for both.",
+            "fr": "Laissez vide pour les deux.",
+            "de": "Leer lassen für beide.",
+            "es": "Déjelo vacío para ambos."
+          },
+          "options": [
+            {
+              "value": "worse",
+              "label": {
+                "en": "Worse",
+                "fr": "Dégradation",
+                "de": "Schlechter",
+                "es": "Empeora"
+              }
+            },
+            {
+              "value": "better",
+              "label": {
+                "en": "Better",
+                "fr": "Amélioration",
+                "de": "Besser",
+                "es": "Mejora"
+              }
+            }
+          ]
+        }
+      ],
+      "variables": [
+        {
+          "key": "place",
+          "type": "string",
+          "label": {
+            "en": "Place (device)",
+            "fr": "Lieu (appareil)",
+            "de": "Ort (Gerät)",
+            "es": "Lugar (dispositivo)"
+          }
+        },
+        {
+          "key": "name",
+          "type": "string",
+          "label": {
+            "en": "Place name",
+            "fr": "Nom du lieu",
+            "de": "Name des Ortes",
+            "es": "Nombre del lugar"
+          }
+        },
+        {
+          "key": "caqi",
+          "type": "number",
+          "label": {
+            "en": "CAQI",
+            "fr": "CAQI",
+            "de": "CAQI",
+            "es": "CAQI"
+          }
+        },
+        {
+          "key": "level",
+          "type": "string",
+          "label": {
+            "en": "Level (key)",
+            "fr": "Niveau (clé)",
+            "de": "Stufe (Schlüssel)",
+            "es": "Nivel (clave)"
+          }
+        },
+        {
+          "key": "level_name",
+          "type": "string",
+          "label": {
+            "en": "Level",
+            "fr": "Niveau",
+            "de": "Stufe",
+            "es": "Nivel"
+          }
+        },
+        {
+          "key": "previous_level",
+          "type": "string",
+          "label": {
+            "en": "Previous level (key)",
+            "fr": "Niveau précédent (clé)",
+            "de": "Vorherige Stufe (Schlüssel)",
+            "es": "Nivel anterior (clave)"
+          }
+        },
+        {
+          "key": "direction",
+          "type": "string",
+          "label": {
+            "en": "Direction (worse, better)",
+            "fr": "Sens (worse, better)",
+            "de": "Richtung (worse, better)",
+            "es": "Sentido (worse, better)"
+          }
+        },
+        {
+          "key": "pm25",
+          "type": "number",
+          "label": {
+            "en": "PM2.5 (µg/m³)",
+            "fr": "PM2,5 (µg/m³)",
+            "de": "PM2,5 (µg/m³)",
+            "es": "PM2,5 (µg/m³)"
+          }
+        },
+        {
+          "key": "pm10",
+          "type": "number",
+          "label": {
+            "en": "PM10 (µg/m³)",
+            "fr": "PM10 (µg/m³)",
+            "de": "PM10 (µg/m³)",
+            "es": "PM10 (µg/m³)"
+          }
+        }
+      ]
+    },
+    {
+      "key": "pollution_expected",
+      "label": {
+        "en": "Airly: pollution expected",
+        "fr": "Airly : pollution prévue",
+        "de": "Airly: Verschmutzung erwartet",
+        "es": "Airly: contaminación prevista"
+      },
+      "description": {
+        "en": "The forecast of the next 24 hours reaches a poor or very poor level. Once per episode.",
+        "fr": "La prévision des 24 prochaines heures atteint un niveau mauvais ou très mauvais. Une fois par épisode.",
+        "de": "Die Vorhersage der nächsten 24 Stunden erreicht eine schlechte oder sehr schlechte Stufe. Einmal pro Episode.",
+        "es": "La previsión de las próximas 24 horas alcanza un nivel malo o muy malo. Una vez por episodio."
+      },
+      "fields": [
+        {
+          "key": "place",
+          "type": "select",
+          "source": "devices",
+          "label": {
+            "en": "Place",
+            "fr": "Lieu",
+            "de": "Ort",
+            "es": "Lugar"
+          },
+          "description": {
+            "en": "An Airly device. Leave empty for any place.",
+            "fr": "Un appareil Airly. Laissez vide pour tous les lieux.",
+            "de": "Ein Airly-Gerät. Leer lassen für alle Orte.",
+            "es": "Un dispositivo Airly. Déjelo vacío para cualquier lugar."
+          },
+          "required": false
+        },
+        {
+          "key": "level",
+          "type": "multi_select",
+          "label": {
+            "en": "Level",
+            "fr": "Niveau",
+            "de": "Stufe",
+            "es": "Nivel"
+          },
+          "description": {
+            "en": "The level expected. Leave empty for both.",
+            "fr": "Le niveau prévu. Laissez vide pour les deux.",
+            "de": "Die erwartete Stufe. Leer lassen für beide.",
+            "es": "El nivel previsto. Déjelo vacío para ambos."
+          },
+          "options": [
+            {
+              "value": "high",
+              "label": {
+                "en": "Poor",
+                "fr": "Mauvaise",
+                "de": "Schlecht",
+                "es": "Mala"
+              }
+            },
+            {
+              "value": "very_high",
+              "label": {
+                "en": "Very poor",
+                "fr": "Très mauvaise",
+                "de": "Sehr schlecht",
+                "es": "Muy mala"
+              }
+            }
+          ]
+        }
+      ],
+      "variables": [
+        {
+          "key": "place",
+          "type": "string",
+          "label": {
+            "en": "Place (device)",
+            "fr": "Lieu (appareil)",
+            "de": "Ort (Gerät)",
+            "es": "Lugar (dispositivo)"
+          }
+        },
+        {
+          "key": "name",
+          "type": "string",
+          "label": {
+            "en": "Place name",
+            "fr": "Nom du lieu",
+            "de": "Name des Ortes",
+            "es": "Nombre del lugar"
+          }
+        },
+        {
+          "key": "caqi",
+          "type": "number",
+          "label": {
+            "en": "Highest CAQI expected",
+            "fr": "CAQI maximal prévu",
+            "de": "Höchster erwarteter CAQI",
+            "es": "CAQI máximo previsto"
+          }
+        },
+        {
+          "key": "level",
+          "type": "string",
+          "label": {
+            "en": "Level (key)",
+            "fr": "Niveau (clé)",
+            "de": "Stufe (Schlüssel)",
+            "es": "Nivel (clave)"
+          }
+        },
+        {
+          "key": "level_name",
+          "type": "string",
+          "label": {
+            "en": "Level",
+            "fr": "Niveau",
+            "de": "Stufe",
+            "es": "Nivel"
+          }
+        },
+        {
+          "key": "time",
+          "type": "string",
+          "label": {
+            "en": "Time of the peak",
+            "fr": "Heure du pic",
+            "de": "Uhrzeit des Höchstwerts",
+            "es": "Hora del pico"
+          }
+        },
+        {
+          "key": "hours",
+          "type": "number",
+          "label": {
+            "en": "Hours until the peak",
+            "fr": "Heures avant le pic",
+            "de": "Stunden bis zum Höchstwert",
+            "es": "Horas hasta el pico"
+          }
+        },
+        {
+          "key": "current_caqi",
+          "type": "number",
+          "label": {
+            "en": "CAQI now",
+            "fr": "CAQI actuel",
+            "de": "Aktueller CAQI",
+            "es": "CAQI actual"
+          }
+        }
+      ]
+    },
+    {
+      "key": "who_limit_exceeded",
+      "label": {
+        "en": "Airly: WHO guideline exceeded",
+        "fr": "Airly : seuil OMS dépassé",
+        "de": "Airly: WHO-Richtwert überschritten",
+        "es": "Airly: umbral de la OMS superado"
+      },
+      "description": {
+        "en": "A pollutant of the last hour goes over the WHO guideline value. Again only once back below it.",
+        "fr": "Un polluant de la dernière heure dépasse la valeur guide de l’OMS. De nouveau seulement après être repassé en dessous.",
+        "de": "Ein Schadstoff der letzten Stunde überschreitet den WHO-Richtwert. Erneut erst, nachdem er wieder darunter lag.",
+        "es": "Un contaminante de la última hora supera el valor guía de la OMS. De nuevo solo tras volver por debajo."
+      },
+      "fields": [
+        {
+          "key": "place",
+          "type": "select",
+          "source": "devices",
+          "label": {
+            "en": "Place",
+            "fr": "Lieu",
+            "de": "Ort",
+            "es": "Lugar"
+          },
+          "description": {
+            "en": "An Airly device. Leave empty for any place.",
+            "fr": "Un appareil Airly. Laissez vide pour tous les lieux.",
+            "de": "Ein Airly-Gerät. Leer lassen für alle Orte.",
+            "es": "Un dispositivo Airly. Déjelo vacío para cualquier lugar."
+          },
+          "required": false
+        },
+        {
+          "key": "pollutant",
+          "type": "select",
+          "label": {
+            "en": "Pollutant",
+            "fr": "Polluant",
+            "de": "Schadstoff",
+            "es": "Contaminante"
+          },
+          "description": {
+            "en": "Leave empty for any.",
+            "fr": "Laissez vide pour tous.",
+            "de": "Leer lassen für jeden.",
+            "es": "Déjelo vacío para cualquiera."
+          },
+          "options": [
+            {
+              "value": "pm25",
+              "label": {
+                "en": "PM2.5",
+                "fr": "PM2,5",
+                "de": "PM2,5",
+                "es": "PM2,5"
+              }
+            },
+            {
+              "value": "pm10",
+              "label": {
+                "en": "PM10",
+                "fr": "PM10",
+                "de": "PM10",
+                "es": "PM10"
+              }
+            },
+            {
+              "value": "no2",
+              "label": {
+                "en": "NO₂",
+                "fr": "NO₂",
+                "de": "NO₂",
+                "es": "NO₂"
+              }
+            },
+            {
+              "value": "o3",
+              "label": {
+                "en": "Ozone",
+                "fr": "Ozone",
+                "de": "Ozon",
+                "es": "Ozono"
+              }
+            }
+          ]
+        }
+      ],
+      "variables": [
+        {
+          "key": "place",
+          "type": "string",
+          "label": {
+            "en": "Place (device)",
+            "fr": "Lieu (appareil)",
+            "de": "Ort (Gerät)",
+            "es": "Lugar (dispositivo)"
+          }
+        },
+        {
+          "key": "name",
+          "type": "string",
+          "label": {
+            "en": "Place name",
+            "fr": "Nom du lieu",
+            "de": "Name des Ortes",
+            "es": "Nombre del lugar"
+          }
+        },
+        {
+          "key": "pollutant",
+          "type": "string",
+          "label": {
+            "en": "Pollutant (key)",
+            "fr": "Polluant (clé)",
+            "de": "Schadstoff (Schlüssel)",
+            "es": "Contaminante (clave)"
+          }
+        },
+        {
+          "key": "pollutant_name",
+          "type": "string",
+          "label": {
+            "en": "Pollutant",
+            "fr": "Polluant",
+            "de": "Schadstoff",
+            "es": "Contaminante"
+          }
+        },
+        {
+          "key": "value",
+          "type": "number",
+          "label": {
+            "en": "Value (µg/m³)",
+            "fr": "Valeur (µg/m³)",
+            "de": "Wert (µg/m³)",
+            "es": "Valor (µg/m³)"
+          }
+        },
+        {
+          "key": "limit",
+          "type": "number",
+          "label": {
+            "en": "WHO guideline (µg/m³)",
+            "fr": "Valeur guide OMS (µg/m³)",
+            "de": "WHO-Richtwert (µg/m³)",
+            "es": "Valor guía OMS (µg/m³)"
+          }
+        },
+        {
+          "key": "percent",
+          "type": "number",
+          "label": {
+            "en": "Percent of the guideline",
+            "fr": "Pourcentage de la valeur guide",
+            "de": "Prozent des Richtwerts",
+            "es": "Porcentaje del valor guía"
+          }
+        }
+      ]
+    }
+  ],
+  "scene_actions": [
+    {
+      "key": "get_air_quality",
+      "timeout_seconds": 30,
+      "label": {
+        "en": "Airly: read the air quality",
+        "fr": "Airly : lire la qualité de l’air",
+        "de": "Airly: Luftqualität lesen",
+        "es": "Airly: leer la calidad del aire"
+      },
+      "description": {
+        "en": "The CAQI now, the particles, the weather, the forecast peak, and a sentence for a message.",
+        "fr": "Le CAQI actuel, les particules, la météo, le pic prévu, et une phrase pour un message.",
+        "de": "Der aktuelle CAQI, die Partikel, das Wetter, der erwartete Höchstwert und ein Satz für eine Nachricht.",
+        "es": "El CAQI actual, las partículas, el tiempo, el pico previsto y una frase para un mensaje."
+      },
+      "fields": [
+        {
+          "key": "place",
+          "type": "select",
+          "source": "devices",
+          "label": {
+            "en": "Place",
+            "fr": "Lieu",
+            "de": "Ort",
+            "es": "Lugar"
+          },
+          "description": {
+            "en": "An Airly device. Leave empty for the first place.",
+            "fr": "Un appareil Airly. Laissez vide pour le premier lieu.",
+            "de": "Ein Airly-Gerät. Leer lassen für den ersten Ort.",
+            "es": "Un dispositivo Airly. Déjelo vacío para el primer lugar."
+          },
+          "required": false
+        }
+      ],
+      "outputs": [
+        {
+          "key": "name",
+          "type": "string",
+          "label": {
+            "en": "Place name",
+            "fr": "Nom du lieu",
+            "de": "Name des Ortes",
+            "es": "Nombre del lugar"
+          }
+        },
+        {
+          "key": "caqi",
+          "type": "number",
+          "label": {
+            "en": "CAQI",
+            "fr": "CAQI",
+            "de": "CAQI",
+            "es": "CAQI"
+          }
+        },
+        {
+          "key": "level",
+          "type": "string",
+          "label": {
+            "en": "Level (key)",
+            "fr": "Niveau (clé)",
+            "de": "Stufe (Schlüssel)",
+            "es": "Nivel (clave)"
+          }
+        },
+        {
+          "key": "level_name",
+          "type": "string",
+          "label": {
+            "en": "Level",
+            "fr": "Niveau",
+            "de": "Stufe",
+            "es": "Nivel"
+          }
+        },
+        {
+          "key": "pm1",
+          "type": "number",
+          "label": {
+            "en": "PM1 (µg/m³)",
+            "fr": "PM1 (µg/m³)",
+            "de": "PM1 (µg/m³)",
+            "es": "PM1 (µg/m³)"
+          }
+        },
+        {
+          "key": "pm25",
+          "type": "number",
+          "label": {
+            "en": "PM2.5 (µg/m³)",
+            "fr": "PM2,5 (µg/m³)",
+            "de": "PM2,5 (µg/m³)",
+            "es": "PM2,5 (µg/m³)"
+          }
+        },
+        {
+          "key": "pm10",
+          "type": "number",
+          "label": {
+            "en": "PM10 (µg/m³)",
+            "fr": "PM10 (µg/m³)",
+            "de": "PM10 (µg/m³)",
+            "es": "PM10 (µg/m³)"
+          }
+        },
+        {
+          "key": "temperature",
+          "type": "number",
+          "label": {
+            "en": "Temperature (°C)",
+            "fr": "Température (°C)",
+            "de": "Temperatur (°C)",
+            "es": "Temperatura (°C)"
+          }
+        },
+        {
+          "key": "humidity",
+          "type": "number",
+          "label": {
+            "en": "Humidity (%)",
+            "fr": "Humidité (%)",
+            "de": "Luftfeuchtigkeit (%)",
+            "es": "Humedad (%)"
+          }
+        },
+        {
+          "key": "pressure",
+          "type": "number",
+          "label": {
+            "en": "Pressure (hPa)",
+            "fr": "Pression (hPa)",
+            "de": "Luftdruck (hPa)",
+            "es": "Presión (hPa)"
+          }
+        },
+        {
+          "key": "pm25_who_percent",
+          "type": "number",
+          "label": {
+            "en": "PM2.5, % of the WHO guideline",
+            "fr": "PM2,5, % de la valeur OMS",
+            "de": "PM2,5, % des WHO-Richtwerts",
+            "es": "PM2,5, % del valor OMS"
+          }
+        },
+        {
+          "key": "pm10_who_percent",
+          "type": "number",
+          "label": {
+            "en": "PM10, % of the WHO guideline",
+            "fr": "PM10, % de la valeur OMS",
+            "de": "PM10, % des WHO-Richtwerts",
+            "es": "PM10, % del valor OMS"
+          }
+        },
+        {
+          "key": "forecast_caqi",
+          "type": "number",
+          "label": {
+            "en": "Highest CAQI within 24 h",
+            "fr": "CAQI maximal sous 24 h",
+            "de": "Höchster CAQI in 24 Std.",
+            "es": "CAQI máximo en 24 h"
+          }
+        },
+        {
+          "key": "forecast_level",
+          "type": "string",
+          "label": {
+            "en": "Level of the peak (key)",
+            "fr": "Niveau du pic (clé)",
+            "de": "Stufe des Höchstwerts (Schlüssel)",
+            "es": "Nivel del pico (clave)"
+          }
+        },
+        {
+          "key": "forecast_time",
+          "type": "string",
+          "label": {
+            "en": "Time of the peak",
+            "fr": "Heure du pic",
+            "de": "Uhrzeit des Höchstwerts",
+            "es": "Hora del pico"
+          }
+        },
+        {
+          "key": "summary",
+          "type": "string",
+          "label": {
+            "en": "Summary",
+            "fr": "Résumé",
+            "de": "Zusammenfassung",
+            "es": "Resumen"
+          }
+        }
+      ]
+    }
+  ]
+}
