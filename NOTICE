@@ -1,0 +1,20 @@
+Gladys Airly integration
+Copyright 2026 William Deren
+
+This product is licensed under the Apache License, Version 2.0 (see LICENSE).
+
+The air quality measurements and forecasts come from Airly
+(https://airly.org), through the Airly API (https://developer.airly.org).
+Data provided by Airly, used under the terms of service of the Airly API.
+
+The files under test/fixtures are answers of the Airly API v2:
+  - measurements_point.json and measurements_no_station.json come from the
+    tests of the Home Assistant integration "airly"
+    (https://github.com/home-assistant/core, Apache License 2.0);
+  - measurements_installation.json and installations_nearest.json come from
+    the tests of the Python library "airly"
+    (https://github.com/ak-ambi/python-airly, MIT licence,
+    Copyright (c) 2019 Paweł Stankowski).
+
+This community integration is not affiliated with, endorsed or sponsored by
+Airly sp. z o.o.
