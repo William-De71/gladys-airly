@@ -8,7 +8,9 @@ const params = new URLSearchParams(location.search);
 const LANG = params.get('lang') || 'en';
 const CARDS = (params.get('cards') || 'air_quality').split(',');
 
-// The "now" of the contents: the chart axis matches it.
+// dashboard.boxes.external-widget.now in the Gladys translations
+const NOW_LABEL = { en: 'Now', fr: 'Maintenant', de: 'Jetzt', es: 'Ahora' };
+// The "now" of the contents: the chart axis and its "now" marker match it.
 const realNow = Date.now;
 Date.now = () => DATA.now;
 
@@ -131,6 +133,53 @@ const yAxisFormatter = (value) => {
   return value.toFixed(2);
 };
 
+// The accents of the chart markers (ANNOTATION_COLORS of WidgetComponents).
+const ANNOTATION_COLORS = { neutral: '#667081', danger: '#d63939' };
+const annotationLabel = (label, color, textAnchor = 'middle') => ({
+  text: label,
+  borderColor: color,
+  orientation: 'horizontal',
+  position: 'top',
+  textAnchor,
+  style: {
+    background: color,
+    color: '#fff',
+    fontSize: '10px',
+    fontWeight: 600,
+    padding: { left: 4, right: 4 },
+  },
+});
+
+// buildAnnotations of WidgetComponents: the `now_marker` is a dashed line at
+// the current time, when the series span it.
+function nowAnnotation(component, series) {
+  if (!component.now_marker) return undefined;
+  let min = Infinity;
+  let max = -Infinity;
+  series.forEach((s) =>
+    s.data.forEach(([t]) => {
+      min = Math.min(min, t);
+      max = Math.max(max, t);
+    }),
+  );
+  const now = Date.now();
+  const tolerance = Math.max((max - min) * 0.05, 5 * 60 * 1000);
+  if (now < min - tolerance || now > max + tolerance) return undefined;
+  const x = Math.min(Math.max(now, min), max);
+  const anchor = x > max - (max - min) * 0.08 ? 'end' : 'middle';
+  return {
+    xaxis: [
+      {
+        x,
+        borderColor: ANNOTATION_COLORS.neutral,
+        strokeDashArray: 4,
+        label: annotationLabel(NOW_LABEL[LANG], ANNOTATION_COLORS.neutral, anchor),
+      },
+    ],
+    points: [],
+  };
+}
+
 // getApexChartAreaOptions (or Line) of front/src/components/boxs/chart,
 // display_axes on, height 200, the default colors of the chart box.
 function chart(component) {
@@ -170,6 +219,7 @@ function chart(component) {
     yaxis: { labels: { padding: 4, formatter: yAxisFormatter } },
     colors: ['#316cbe', '#d63031', '#00b894', '#fdcb6e', '#6c5ce7'],
     legend: { show: true, position: 'bottom' },
+    annotations: nowAnnotation(component, series),
   };
   requestAnimationFrame(() => {
     window.PENDING_CHARTS += 1;

@@ -15,7 +15,7 @@
 import { WIDGET_COLORS } from '@gladysassistant/integration-sdk';
 import { t, all, levelText } from './i18n.js';
 import { ALERT_LEVELS } from './caqi.js';
-import { formatTime } from './time.js';
+import { formatTime, hoursBetween } from './time.js';
 
 const WIDGETS = { AIR_QUALITY: 'air_quality', FORECAST: 'forecast' };
 const WIDGET_ACTIONS = { REFRESH: 'refresh' };
@@ -242,11 +242,8 @@ function buildForecastWidget({ place, reading, peak, language, timeZone, now }) 
   }
   if (peak) {
     rows.push({
-      label: t('rowPeak', language),
-      value: clip(
-        `${peak.caqi} · ${levelText(peak.level, language, true)} · ${formatTime(peak.at, { language, timeZone })}`,
-        40,
-      ),
+      label: t('rowPeak', language, { time: formatTime(peak.at, { language, timeZone }) }),
+      value: clip(`${peak.caqi} · ${levelText(peak.level, language, true)}`, 40),
       color: colorOf(peak.level),
     });
   }
@@ -265,6 +262,7 @@ function buildForecastWidget({ place, reading, peak, language, timeZone, now }) 
         `${t('alertBody', language, {
           level: levelText(peak.level, language).toLocaleLowerCase(language),
           time: formatTime(peak.at, { language, timeZone }),
+          hours: hoursBetween(now, peak.at),
         })} ${t(`advice_${peak.level}`, language)}`,
         300,
       ),

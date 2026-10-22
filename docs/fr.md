@@ -1,88 +1,93 @@
-# AirNow
+# Airly
 
 ## Présentation
 
-[AirNow](https://www.airnow.gov) est le programme de qualité de l’air de l’Agence américaine de protection de l’environnement (EPA) et de plus de 150 agences d’États, locales et tribales. Il publie l’**indice de qualité de l’air (AQI)** mesuré chaque heure par plus de 2 500 stations, et les prévisions de plus de 500 villes, aux États-Unis, au Canada et au Mexique.
+[Airly](https://airly.org) exploite un réseau de milliers de capteurs de qualité de l’air, surtout en Pologne et en Europe. Chaque capteur mesure les **particules fines** (PM1, PM2,5, PM10), la plupart la **météo** (température, humidité, pression), certains des **gaz** (NO₂, O₃, SO₂, CO). Airly en tire le **CAQI** (Common Air Quality Index, l’indice européen) et une **prévision des 24 prochaines heures**.
 
-Cette intégration l’amène dans Gladys pour jusqu’à trois lieux, chacun une maison de Gladys ou un code ZIP : l’AQI actuel avec PM2,5, ozone et PM10, la prévision des prochains jours, des déclencheurs de scène quand la qualité de l’air change ou qu’une alerte est annoncée, et deux widgets de tableau de bord.
+Cette intégration l’amène dans Gladys pour trois lieux au plus, chacun une maison de Gladys ou un capteur Airly : un appareil par lieu, des déclencheurs de scène quand la qualité de l’air change, quand une pollution est prévue ou quand une valeur guide de l’OMS est dépassée, une action de scène, et deux widgets de tableau de bord.
 
-L’AQI va de 0 à 500 (davantage lors des fumées de feux de forêt) : Bon (0-50), Modéré (51-100), Mauvais pour les personnes sensibles (101-150), Mauvais (151-200), Très mauvais (201-300), Dangereux (301 et plus). Les données d’AirNow sont **provisoires** : elles ne sont pas entièrement vérifiées et peuvent changer.
+Le CAQI va de 0 à 100 et au-delà : très bonne (0-25), bonne (25-50), moyenne (50-75), mauvaise (75-100), très mauvaise (100 et plus). Le niveau vient toujours de la valeur.
 
 ## Prérequis
 
 - Gladys Assistant **5.2.0** ou plus récent (le sélecteur de maison de la configuration). Les instances plus anciennes ne peuvent pas installer l’intégration.
-- Une clé d’API AirNow gratuite (ci-dessous).
-- Un lieu couvert par AirNow : les États-Unis, et le Canada ou le Mexique via une maison (les codes ZIP sont américains). AirNow répond avec la zone de mesure la plus proche et ses stations, dans un rayon d’environ 80 km.
+- Une clé d’API Airly gratuite (ci-dessous).
+- Un lieu couvert par Airly : une maison avec des capteurs Airly à quelques kilomètres (la carte Airly les montre), ou le numéro d’un capteur.
 
 ### Obtenir une clé d’API
 
-1. Ouvrez [Request an AirNow API account](https://docs.airnowapi.org/account/request/) et remplissez le formulaire (un nom et une adresse e-mail).
-2. Confirmez l’e-mail, puis [connectez-vous](https://docs.airnowapi.org/login).
-3. Ouvrez **Web Services** : votre clé d’API est en haut à droite de la page. Copiez-la.
+1. Ouvrez le [portail développeur d’Airly](https://developer.airly.org/en) et créez un compte.
+2. Choisissez l’offre gratuite : votre clé d’API s’affiche sur la page des clés du portail. Copiez-la.
 
-Une clé permet 500 requêtes par heure ; l’intégration en fait moins de deux par lieu et par heure, et jamais plus de 200 par heure.
+Une clé gratuite permet **100 requêtes par jour** (les clés créées avant 2020 : 1 000), comptées par jour UTC. Une lecture d’un lieu est une requête : l’intégration les répartit d’elle-même entre vos lieux.
+
+### Trouver le numéro d’un capteur
+
+Sur la [carte Airly](https://airly.org/map/en/), cliquez sur un capteur : le numéro de l’installation termine en général l’adresse de la page (`…,i204` pour l’installation 204). Collez le numéro, ou l’adresse entière, dans le champ d’un lieu.
 
 ## Configuration
 
-| Champ                 | Ce qu’il faut saisir                                                                                      |
-| --------------------- | --------------------------------------------------------------------------------------------------------- |
-| Clé d’API             | La clé de votre compte AirNow. Stockée en secret, jamais réaffichée ni journalisée.                       |
-| Maison (lieu 1, 2, 3) | Une maison de Gladys : sa position (Paramètres → Maisons) situe le lieu. L’intégration demande cet accès. |
-| Ou un code ZIP        | Un code postal américain (ZIP), cinq chiffres : `90210`. Prioritaire sur la maison du même lieu.          |
-| Langue des textes     | Noms des appareils et textes transmis aux scènes. Automatique : la langue du dernier widget affiché.      |
+| Champ                         | Que saisir                                                                                                      |
+| ----------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| Clé d’API                     | La clé de votre compte Airly. Enregistrée comme secret, jamais réaffichée ni écrite dans les journaux.          |
+| Maison (lieu 1, 2, 3)         | Une maison de Gladys : sa position (Paramètres → Maisons) situe le lieu. L’intégration demande cet accès.       |
+| Ou un numéro de capteur Airly | Le numéro d’une installation Airly : `204`. Il l’emporte sur la maison du même lieu.                            |
+| Qualité de l’air d’une maison | À la position de la maison (Airly interpole les capteurs voisins), ou le capteur le plus proche (3 km au plus). |
+| Langue des textes             | Noms des appareils et textes donnés aux scènes. Automatique : la langue du dernier widget affiché.              |
 
-Deux boutons complètent l’écran : **Lire maintenant** (vérifie la clé, situe les lieux et les lit tout de suite) et **Diagnostic** (l’état de l’intégration dans ses journaux, sans la clé).
+Deux boutons complètent l’écran : **Lire maintenant** (vérifie la clé, situe les lieux et les lit tout de suite) et **Diagnostic** (l’état de l’intégration dans ses journaux, sans la clé ni les coordonnées).
 
 ## Utilisation
 
 ### Appareils
 
-Ouvrez l’onglet **Découverte** de l’intégration et créez un appareil par lieu, nommé d’après sa zone de mesure (« AirNow NW Coastal LA ») :
+Ouvrez l’onglet **Découverte** de l’intégration et créez un appareil par lieu (« Airly Maison », « Airly Kraków, Mikołajska ») :
 
-- **Indice de qualité de l’air** : l’AQI actuel, le plus élevé des polluants mesurés ;
-- **PM2,5 (AQI)**, **Ozone (AQI)**, **PM10 (AQI)** : l’AQI de chaque polluant (NowCast, l’indice horaire d’AirNow) ;
-- **Qualité de l’air** : la catégorie, en texte ;
-- **AQI prévu aujourd’hui** et **AQI prévu demain** : quand l’agence donne un nombre (certaines ne donnent qu’une catégorie) ;
-- **Prévision** : « Demain : Modéré (Ozone) », et l’alerte s’il y en a une.
+- **Indice de qualité de l’air (CAQI)** et **Qualité de l’air**, son niveau en texte ;
+- **PM2,5** et **PM10**, en µg/m³ ;
+- **CAQI maximal sous 24 h** et **Prévision de qualité de l’air** : « Maximum sous 24 h : 62, Moyenne, à 18:00 » ;
+- dès que le lieu les a donnés : **Température extérieure**, **Humidité extérieure**, **Pression atmosphérique**, **Dioxyde d’azote (NO₂)**, **Ozone (O₃)**, **Dioxyde de soufre (SO₂)**.
 
-Gladys colore les fonctionnalités AQI sur cette échelle même. Un polluant qu’une station n’a pas envoyé garde sa dernière valeur : aucun 0 n’est inventé. Les mesures sont lues à la 35e minute de chaque heure, une fois publiées par AirNow, et les prévisions toutes les 3 heures.
+Une valeur qu’Airly n’a pas donnée garde la précédente : aucun 0 n’est inventé. Une fonctionnalité proposée ne disparaît jamais. PM1 et CO n’ont pas de catégorie dans Gladys : ils sont dans le widget et l’action de scène.
+
+Tous les lieux sont lus dans la même tournée, aussi souvent que la limite quotidienne de la clé le permet : toutes les 30 minutes avec un lieu, 35 avec deux, 50 avec trois, avec une clé gratuite. Dix requêtes par jour restent en réserve pour **Lire maintenant**, le bouton **Actualiser** et l’action de scène.
 
 ### Widgets du tableau de bord
 
-![Le widget Qualité de l’air AirNow pour Napa avec l’AQI et trois polluants, et le widget Prévision AirNow sur six jours avec une alerte (illustration générée, pas une capture d’écran)](https://raw.githubusercontent.com/William-De71/gladys-airnow/main/docs/assets/widgets.fr.png)
+![Le widget Qualité de l’air Airly avec le CAQI, PM1, PM2,5, PM10 et la température, et le widget Prévision Airly avec un graphique des 24 dernières et des 24 prochaines heures et une alerte de pollution (illustration générée, pas une capture d’écran)](https://raw.githubusercontent.com/William-De71/gladys-airly/main/docs/assets/widgets.fr.png)
 
-- **Qualité de l’air AirNow** : l’AQI actuel dans la couleur de sa catégorie, PM2,5, ozone et PM10, le conseil santé de la catégorie, l’heure de la mesure et l’agence qui l’a faite.
-- **Prévision AirNow** : une carte par jour avec sa catégorie et son polluant principal ; un appui affiche le conseil santé et le commentaire du prévisionniste. Une alerte qualité de l’air est annoncée en bas.
+- **Qualité de l’air Airly** : le CAQI dans la couleur de son niveau, PM1, PM2,5 et PM10 (vert sous la valeur guide de l’OMS, orange jusqu’au double, rouge au-delà), la température, un conseil, l’humidité et la pression.
+- **Prévision Airly** : le CAQI des 24 dernières heures et des 24 prochaines sur un graphique, la valeur actuelle, le pic prévu, et une alerte quand il atteint un niveau mauvais.
 
-Les deux ont un réglage **Lieu** (le premier lieu par défaut) et un bouton **Actualiser**, qui ne relit que si AirNow peut avoir du nouveau.
+Les deux ont un réglage **Lieu** (le premier lieu par défaut) et un bouton **Actualiser**, qui ne relit qu’au-delà de 15 minutes. Un widget ne dépense jamais de requête de lui-même : il montre la dernière lecture.
 
 ### Scènes
 
 Déclencheurs :
 
-- **AirNow : qualité de l’air changée** : la catégorie actuelle change. Filtres : lieu, nouvelle catégorie (une ou plusieurs), sens (dégradation, amélioration). Variables : `aqi`, `category`, `category_name`, `previous_category`, `direction`, `pollutant_name`, `area`.
-- **AirNow : prévision mise à jour** : la catégorie prévue pour un jour apparaît ou change. Filtres : lieu, jour (aujourd’hui, demain, plus tard), catégorie.
-- **AirNow : alerte qualité de l’air** : une prévision annonce un « Air Quality Action Day », une alerte de l’agence locale. Filtres : lieu, jour. Variables : `date`, `aqi`, `category_name`, `pollutant_name`, `discussion`.
+- **Airly : qualité de l’air changée** : le niveau du CAQI change. Filtres : lieu, nouveau niveau (un ou plusieurs), sens (dégradation, amélioration). Variables : `caqi`, `level`, `level_name`, `previous_level`, `direction`, `pm25`, `pm10`, `name`.
+- **Airly : pollution prévue** : la prévision des 24 prochaines heures atteint un niveau mauvais ou très mauvais ; une fois par épisode, de nouveau s’il s’aggrave. Filtres : lieu, niveau. Variables : `caqi`, `level_name`, `time`, `hours`, `current_caqi`.
+- **Airly : seuil OMS dépassé** : PM2,5, PM10, NO₂ ou ozone de la dernière heure dépasse la valeur guide de l’OMS ; de nouveau seulement après être repassé en dessous. Filtres : lieu, polluant. Variables : `pollutant_name`, `value`, `limit`, `percent`.
 
-Action : **AirNow : lire la qualité de l’air** d’un lieu : l’AQI, la catégorie, la prévision du jour et du lendemain, l’annonce éventuelle d’une alerte, et une phrase `summary` toute faite.
+Action : **Airly : lire la qualité de l’air** d’un lieu : le CAQI et son niveau, PM1, PM2,5, PM10, la météo, les pourcentages OMS, le pic prévu, et une phrase toute prête `summary`.
 
 Exemples :
 
-- Quand **la qualité de l’air devient Mauvais pour les personnes sensibles ou pire** → fermer les fenêtres et allumer le purificateur d’air.
-- Quand **une alerte qualité de l’air est annoncée pour demain** → envoyer `{{triggerEvent.data.category_name}} prévu demain ({{triggerEvent.data.pollutant_name}})` sur votre téléphone.
-- Chaque matin à 7 h → **lire la qualité de l’air** et faire annoncer le `summary` avant le footing.
+- Quand **la qualité de l’air devient mauvaise ou très mauvaise** → fermer les fenêtres et allumer le purificateur d’air.
+- Quand **une pollution est prévue** → envoyer `Qualité de l’air {{triggerEvent.data.level_name}} attendue vers {{triggerEvent.data.time}}` sur votre téléphone.
+- Chaque matin à 7 h → **lire la qualité de l’air** et faire dire le `summary` avant le footing.
 
 ### Transport
 
-Cloud (`"transports": ["cloud"]`) : l’intégration contacte `www.airnowapi.org` en HTTPS avec votre clé et, pour chaque lieu, le code ZIP ou les coordonnées de la maison (arrondies à une dizaine de mètres). Rien d’autre ne quitte votre réseau. Les lectures sont gardées dans le volume `/data` de l’intégration : un redémarrage ne relit rien qui soit encore frais.
+Cloud (`"transports": ["cloud"]`) : l’intégration contacte `airapi.airly.eu` en HTTPS avec votre clé (dans un en-tête) et, pour chaque lieu, le numéro du capteur ou les coordonnées de la maison (arrondies à environ 10 m). Rien d’autre ne quitte votre réseau. Les lectures et les requêtes du jour sont gardées dans le volume `/data` de l’intégration : un redémarrage ne relit rien de récent.
 
 ## Dépannage
 
-- **AirNow a refusé la clé d’API** : recopiez-la depuis la page Web Services (sans espace), puis enregistrez la configuration : les lectures reprennent aussitôt.
-- **Pas de données près d’un lieu** : le lieu est trop loin d’une zone de mesure ou d’une station (centre du Nevada, hors d’Amérique du Nord). Essayez le code ZIP de la ville la plus proche.
-- **La maison n’a pas de position** : renseignez-la dans Paramètres → Maisons, puis cliquez sur **Lire maintenant**.
-- **Pas de prévision** : certaines agences ne prévoient qu’une partie de l’année ou certains jours ; le widget le dit.
-- **Valeurs différentes d’AirNow.gov de quelques points** : les deux montrent le NowCast de la même heure, mais la zone de mesure et les stations retenues peuvent légèrement différer.
-- **Toujours bloqué** : cliquez sur **Diagnostic**, puis ouvrez un ticket sur [GitHub](https://github.com/William-De71/gladys-airnow/issues) avec les versions de Gladys et de l’intégration, le lieu, et les lignes « AirNow diagnostic » des journaux (ajoutez `DEBUG=gladys-integration-sdk` en mode développeur).
+- **Airly a refusé la clé d’API** : recopiez-la depuis le portail développeur (sans espace), puis enregistrez la configuration : les lectures reprennent aussitôt.
+- **Aucun capteur près d’un lieu** : Airly n’a rien à portée de la maison. Choisissez le mode « Capteur le plus proche », le numéro d’un capteur, ou un autre lieu.
+- **La limite quotidienne de la clé est atteinte** : les lectures reprennent après minuit UTC. Avec trois lieux et beaucoup d’appuis sur Actualiser, la réserve s’épuise plus vite.
+- **La maison n’a pas de position** : renseignez-la dans Paramètres → Maisons, puis appuyez sur **Lire maintenant**.
+- **Pas de prévision** : Airly ne prévoit que pour une partie de ses capteurs ; le widget le dit.
+- **Toujours bloqué** : appuyez sur **Diagnostic**, puis ouvrez une issue sur [GitHub](https://github.com/William-De71/gladys-airly/issues) avec les versions de Gladys et de l’intégration, et les lignes « Airly diagnostic » des journaux (ajoutez `DEBUG=gladys-integration-sdk` en mode développeur).
 
-Données : U.S. EPA AirNow et ses agences partenaires, données provisoires, affichées telles que reçues.
+Données fournies par Airly. Cette intégration communautaire n’est pas affiliée à Airly.

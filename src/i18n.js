@@ -84,7 +84,7 @@ const TEXTS = {
   short_low: { en: 'Good', fr: 'Bonne', de: 'Gut', es: 'Buena' },
   short_medium: { en: 'Moderate', fr: 'Moyenne', de: 'Mäßig', es: 'Moderada' },
   short_high: { en: 'Poor', fr: 'Mauvaise', de: 'Schlecht', es: 'Mala' },
-  short_very_high: { en: 'Very poor', fr: 'Très mauv.', de: 'Sehr schlecht', es: 'Muy mala' },
+  short_very_high: { en: 'Very poor', fr: 'Très mauvaise', de: 'Sehr schlecht', es: 'Muy mala' },
   advice_very_low: {
     en: 'Clean air: a great time to air the house and be active outside.',
     fr: 'Air pur : un bon moment pour aérer la maison et bouger dehors.',
@@ -92,10 +92,10 @@ const TEXTS = {
     es: 'Aire limpio: un buen momento para ventilar la casa y estar activo al aire libre.',
   },
   advice_low: {
-    en: 'Good air: no reason to limit outdoor activities.',
-    fr: 'Air de bonne qualité : aucune raison de limiter les activités dehors.',
-    de: 'Gute Luft: kein Grund, Aktivitäten im Freien einzuschränken.',
-    es: 'Aire de buena calidad: ninguna razón para limitar las actividades al aire libre.',
+    en: 'No reason to limit outdoor activities.',
+    fr: 'Aucune raison de limiter les activités dehors.',
+    de: 'Kein Grund, Aktivitäten im Freien einzuschränken.',
+    es: 'Ninguna razón para limitar las actividades al aire libre.',
   },
   advice_medium: {
     en: 'Sensitive people should make long or intense outdoor efforts lighter.',
@@ -279,16 +279,16 @@ const TEXTS = {
   seriesForecast: { en: 'Forecast', fr: 'Prévision', de: 'Vorhersage', es: 'Previsión' },
   rowNow: { en: 'Now', fr: 'Maintenant', de: 'Jetzt', es: 'Ahora' },
   rowPeak: {
-    en: 'Highest within 24 h',
-    fr: 'Maximum sous 24 h',
-    de: 'Höchstwert in 24 Std.',
-    es: 'Máximo en 24 h',
+    en: 'Peak at {time}',
+    fr: 'Pic à {time}',
+    de: 'Spitze um {time}',
+    es: 'Pico a las {time}',
   },
   alertBody: {
-    en: 'Air quality {level} expected around {time}.',
-    fr: 'Qualité de l’air {level} attendue vers {time}.',
-    de: 'Luftqualität {level} gegen {time} erwartet.',
-    es: 'Calidad del aire {level} prevista hacia las {time}.',
+    en: 'Air quality {level} expected around {time} (in {hours} h).',
+    fr: 'Qualité de l’air {level} attendue vers {time} (dans {hours} h).',
+    de: 'Luftqualität {level} gegen {time} erwartet (in {hours} Std.).',
+    es: 'Calidad del aire {level} prevista hacia las {time} (en {hours} h).',
   },
   noForecast: {
     en: 'No forecast for this place yet: Airly forecasts only part of its sensors.',

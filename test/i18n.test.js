@@ -194,16 +194,13 @@ test('runtime labels fit the widget bounds: badges 16, tile and button labels 24
     for (const level of LEVEL_KEYS) {
       assert.ok(TEXTS[`short_${level}`][language].length <= 16, `short_${level}.${language}`);
       assert.ok(`CAQI · ${TEXTS[`short_${level}`][language]}`.length <= 24, `tile ${level}`);
-      assert.ok(
-        `104 · ${TEXTS[`short_${level}`][language]} · 10:00 PM`.length <= 40,
-        `row ${level}.${language}`,
-      );
+      assert.ok(`104 · ${TEXTS[`short_${level}`][language]}`.length <= 22, `row ${level}`);
     }
     for (const key of ['buttonRefresh', 'tileTemperature', 'seriesMeasured', 'seriesForecast']) {
       assert.ok(TEXTS[key][language].length <= 24, `${key}.${language}`);
     }
     for (const key of ['rowNow', 'rowPeak']) {
-      assert.ok(TEXTS[key][language].length <= 40, `${key}.${language}`);
+      assert.ok(t(key, language, { time: '10:00 PM' }).length <= 20, `${key}.${language}`);
     }
   }
 });

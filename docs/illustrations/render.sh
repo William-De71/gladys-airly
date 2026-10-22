@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 # -----------------------------------------------------------------------------
 # Generated illustrations of the widgets, in the four languages:
-#   docs/assets/widgets.<lang>.png   the two AirNow cards: air quality
+#   docs/assets/widgets.<lang>.png   the two Airly cards: air quality
 #                                    and forecast
 #
 # They are NOT screenshots of a running Gladys: the contents come from the
-# integration's own code (gen.mjs, on real AirNow answers kept in test/fixtures), and render.js
+# integration's own code (gen.mjs, on real Airly answers kept in test/fixtures), and render.js
 # draws them the way the Gladys front does (same slots, order and class names
 # as front/src/components/boxs/external-widget, the official theme, the area
 # chart options of front/src/components/boxs/chart). Light theme: the dark
@@ -24,7 +24,7 @@ out="$repo/docs/assets"
 gladys_ref="ff59ad822cfc28aa53717f73fa70108d37fd042a"
 gladys_raw="https://raw.githubusercontent.com/GladysAssistant/Gladys/${gladys_ref}/front/src"
 
-chrome="${CHROME:-$(ls -d "$HOME"/.cache/ms-playwright/chromium-*/chrome-linux*/chrome 2>/dev/null | tail -n1)}"
+chrome="${CHROME:-$(ls -d "$HOME"/.cache/ms-playwright/chromium-*/chrome-linux*/chrome "${PLAYWRIGHT_BROWSERS_PATH:-/nonexistent}"/chromium-*/chrome-linux*/chrome 2>/dev/null | tail -n1)}"
 if [ ! -x "$chrome" ]; then
   echo "Chrome not found: set CHROME=/path/to/chrome" >&2
   exit 1
@@ -58,7 +58,8 @@ locales="$work/vendor/apexcharts/package/dist/locales"
 
 shot() {
   local file="$1" size="$2" query="$3"
-  "$chrome" --headless=new --no-sandbox --disable-gpu --hide-scrollbars \
+  # The chart axis in the timezone of the contents (Kraków).
+  TZ=Europe/Warsaw "$chrome" --headless=new --no-sandbox --disable-gpu --hide-scrollbars \
     --allow-file-access-from-files --virtual-time-budget=4000 \
     --window-size="$size" --force-device-scale-factor=1.5 \
     --screenshot="$file" "file://$work/index.html?$query" >/dev/null 2>&1
