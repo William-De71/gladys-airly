@@ -188,7 +188,8 @@ function createApp(
   function errorText(err, lang, place) {
     const key = {
       auth: 'errAuth',
-      no_data: 'errNoData',
+      // A sensor that answers without a value is offline, not missing.
+      no_data: place?.installationId ? 'errNoMeasurement' : 'errNoData',
       not_found: 'errNotFound',
       rate_limit: 'errRateLimit',
       unreachable: 'errUnreachable',

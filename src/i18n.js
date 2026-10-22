@@ -197,6 +197,12 @@ const TEXTS = {
     de: 'Airly hat noch keinen Sensor nahe {place}: wähle den Modus „Nächster Sensor“ oder einen anderen Ort.',
     es: 'Airly aún no tiene sensores cerca de {place}: elija el modo «Sensor más cercano» u otro lugar.',
   },
+  errNoMeasurement: {
+    en: 'The sensor {place} sent no recent measurement: it may be offline. The next reading tries again.',
+    fr: 'Le capteur {place} n’a envoyé aucune mesure récente : il est peut-être hors ligne. La prochaine lecture réessaiera.',
+    de: 'Der Sensor {place} hat keine aktuelle Messung gesendet: er ist vielleicht offline. Die nächste Lesung versucht es erneut.',
+    es: 'El sensor {place} no envió ninguna medición reciente: quizá esté desconectado. La próxima lectura volverá a intentarlo.',
+  },
   errNotFound: {
     en: 'Airly does not know the sensor {place}: check its number on the Airly map.',
     fr: 'Airly ne connaît pas le capteur {place} : vérifiez son numéro sur la carte Airly.',

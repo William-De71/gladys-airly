@@ -382,6 +382,17 @@ test('places without sensor, without location, unknown, or a bad number are repo
   );
 });
 
+test('a sensor without a recent measurement is reported as offline', async (t) => {
+  const api = fakeAirly();
+  api.answers.installation = rebase(fixture('measurements_no_station.json'));
+  const { gladys } = await startApp({ api, config: { api_key: KEY, installation_1: '204' } });
+  t.after(() => gladys.fake.shutdown());
+  assert.match(
+    gladys.fake.connectionStatus.message.en,
+    /The sensor Kraków, Mikołajska sent no recent measurement/,
+  );
+});
+
 test('an unknown sensor, and the nearest sensor of a house', async (t) => {
   const { gladys, api } = await startApp({
     config: { api_key: KEY, installation_1: '999', house_2: 'home', house_mode: 'nearest' },
