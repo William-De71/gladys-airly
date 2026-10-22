@@ -5,7 +5,7 @@ follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions
 follow [Semantic Versioning](https://semver.org/). This file is generated at
 each release from the Conventional Commits: do not edit it by hand.
 
-## [0.1.0] - unreleased
+## [0.1.0] - 2026-10-22
 
 ### Added
 
@@ -17,3 +17,5 @@ each release from the Conventional Commits: do not edit it by hand.
 - Configuration actions: read now and a diagnostic written to the logs without the key nor the coordinates.
 - Cloud transport: every place read in one round, as often as the daily limit of the key allows (every 30 to 50 minutes with a free key), a reserve kept for the user, readings kept in /data.
 - English, French, German and Spanish everywhere: settings, devices, widgets, scenes and documentation.
+
+[0.1.0]: https://github.com/William-De71/gladys-airly/releases/tag/v0.1.0
