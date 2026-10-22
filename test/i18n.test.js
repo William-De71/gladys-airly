@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync, existsSync } from 'node:fs';
 
 import { LANGUAGES, TEXTS, all, t } from '../src/i18n.js';
+import { LEVEL_KEYS } from '../src/caqi.js';
 
 const read = (path) => readFileSync(new URL(path, import.meta.url), 'utf8');
 const manifest = JSON.parse(read('../gladys-assistant-integration.json'));
@@ -68,36 +69,30 @@ test('every runtime text exists in the four languages, with the same placeholder
 
 test('statuses and toasts stay within 200 characters per language', () => {
   const values = {
-    places: 'NW Coastal LA AQI 34 (Unhealthy for sensitive groups)',
-    place: 'Southeast Desert Area',
-    zip: '9021',
+    places: 'Kraków, Mikołajska CAQI 104 (Very poor)',
+    usage: '100/1000 requests today.',
+    place: 'Kraków, ul. Długa i Floriańska',
+    value: 'x'.repeat(40),
     slot: 3,
     detail: 'x'.repeat(120),
-    aqi: 999,
+    caqi: 999,
     ok: 2,
     total: 3,
-    count: 2,
-    agency: 'Bay Area Air Quality Management District',
+    count: 1000,
+    limit: 1000,
   };
-  for (const key of Object.keys(TEXTS).filter((k) => /^(status|err|refresh|credit)/.test(k))) {
+  for (const key of Object.keys(TEXTS).filter((k) => /^(status|err|refresh)/.test(k))) {
     for (const [language, text] of Object.entries(all(key, values))) {
       assert.ok(text.length <= 200, `${key}.${language}: ${text.length}`);
     }
   }
 });
 
-test('the body of the air quality widget fits: category, advice and credit', () => {
+test('the body of the air quality widget fits: level, advice, humidity and pressure', () => {
   for (const language of LANGUAGES) {
-    for (const category of [
-      'good',
-      'moderate',
-      'sensitive',
-      'unhealthy',
-      'very_unhealthy',
-      'hazardous',
-    ]) {
-      const body = `${t(`category_${category}`, language)}. ${t(`advice_${category}`, language)}\n${t('credit', language, { agency: 'South Coast AQMD' })}.`;
-      assert.ok(body.length <= 300, `${category}.${language}: ${body.length}`);
+    for (const level of LEVEL_KEYS) {
+      const body = `${t(`level_${level}`, language)}. ${t(`advice_${level}`, language)}\n${t('humidityText', language, { value: 100 })} · ${t('pressureText', language, { value: 1013 })}`;
+      assert.ok(body.length <= 300, `${level}.${language}: ${body.length}`);
     }
   }
 });
@@ -123,7 +118,7 @@ test('docs: the four languages, same structure, more than 300 characters', () =>
   }
 });
 
-const RAW = 'https://raw.githubusercontent.com/William-De71/gladys-airnow/main/';
+const RAW = 'https://raw.githubusercontent.com/William-De71/gladys-airly/main/';
 
 test('docs: the generated widget image of their language, never the cover', () => {
   for (const language of LANGUAGES) {
@@ -144,13 +139,13 @@ test('README: badges, the cover under them, the widget image of their language',
     const lines = text.split('\n');
     const badges = lines.findIndex((line) => line.includes('img.shields.io/badge/'));
     assert.match(lines[badges], /badge\/(license|licence|Lizenz|licencia)-Apache--2\.0/, file);
-    assert.match(text, /github\/v\/release\/William-De71\/gladys-airnow\?sort=semver/, file);
-    assert.match(text, /workflow\/status\/William-De71\/gladys-airnow\/release\.yml/, file);
+    assert.match(text, /github\/v\/release\/William-De71\/gladys-airly\?sort=semver/, file);
+    assert.match(text, /workflow\/status\/William-De71\/gladys-airly\/release\.yml/, file);
     assert.match(text, /Gladys-%E2%89%A5%205\.2\.0/, file);
     // The cover right under the four badges, before the pitch.
     assert.match(
       lines[badges + 5],
-      /^!\[AirNow (for|pour|für|para) Gladys Assistant\]\(cover\.jpg\)$/,
+      /^!\[Airly (for|pour|für|para) Gladys Assistant\]\(cover\.jpg\)$/,
       file,
     );
     assert.ok(text.includes(`(docs/assets/widgets.${language}.png)`), `${file} widget image`);
@@ -194,22 +189,21 @@ test('README: one per language, same structure, each linking to the three others
   }
 });
 
-test('runtime labels fit the widget bounds: badges 16, tile and button labels 24', () => {
+test('runtime labels fit the widget bounds: badges 16, tile and button labels 24, rows 40', () => {
   for (const language of LANGUAGES) {
-    for (const category of [
-      'good',
-      'moderate',
-      'sensitive',
-      'unhealthy',
-      'very_unhealthy',
-      'hazardous',
-    ]) {
-      assert.ok(TEXTS[`short_${category}`][language].length <= 16, `short_${category}.${language}`);
+    for (const level of LEVEL_KEYS) {
+      assert.ok(TEXTS[`short_${level}`][language].length <= 16, `short_${level}.${language}`);
+      assert.ok(`CAQI · ${TEXTS[`short_${level}`][language]}`.length <= 24, `tile ${level}`);
       assert.ok(
-        `AQI · ${TEXTS[`short_${category}`][language]}`.length <= 24,
-        `tile ${category}.${language}`,
+        `104 · ${TEXTS[`short_${level}`][language]} · 10:00 PM`.length <= 40,
+        `row ${level}.${language}`,
       );
     }
-    assert.ok(TEXTS.buttonRefresh[language].length <= 24);
+    for (const key of ['buttonRefresh', 'tileTemperature', 'seriesMeasured', 'seriesForecast']) {
+      assert.ok(TEXTS[key][language].length <= 24, `${key}.${language}`);
+    }
+    for (const key of ['rowNow', 'rowPeak']) {
+      assert.ok(TEXTS[key][language].length <= 40, `${key}.${language}`);
+    }
   }
 });

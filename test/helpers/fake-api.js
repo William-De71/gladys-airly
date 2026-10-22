@@ -37,8 +37,7 @@ const silent = { info() {}, warn() {}, error() {}, debug() {} };
 function rebase(data, now = NOW) {
   const copy = clone(data);
   // Whole hours: the forecast keeps its hours on the hour, like Airly's.
-  const shift =
-    Math.round((now - Date.parse(copy.current.tillDateTime)) / 3600000) * 3600000;
+  const shift = Math.round((now - Date.parse(copy.current.tillDateTime)) / 3600000) * 3600000;
   const move = (period) => {
     for (const key of ['fromDateTime', 'tillDateTime']) {
       period[key] = new Date(Date.parse(period[key]) + shift).toISOString();

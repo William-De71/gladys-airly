@@ -7,57 +7,64 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createFakeGladys } from '@gladysassistant/integration-sdk/testing';
 import {
-  DEVICE_FEATURE_CATEGORIES,
-  DEVICE_FEATURE_TYPES,
-  DEVICE_FEATURE_UNITS,
+  DEVICE_FEATURE_CATEGORIES as C,
+  DEVICE_FEATURE_TYPES as T,
+  DEVICE_FEATURE_UNITS as U,
 } from '@gladysassistant/integration-sdk';
 
 import {
   placeKey,
   idsOf,
   keyOfExternalId,
+  optionalKeysOf,
   buildPlaceDevice,
   buildPlaceStates,
   forecastLine,
+  OPTIONAL_KEYS,
 } from '../src/device.js';
-import { parseObservations, parseForecast } from '../src/parse.js';
+import { parseMeasurements, forecastPeak } from '../src/parse.js';
 import { LANGUAGES } from '../src/i18n.js';
-import { fixture } from './helpers/fake-api.js';
+import { fixture, rebase, NOW, TZ } from './helpers/fake-api.js';
 
 const fakeGladys = {
   externalIds: (type, id) => ({
-    device: `ext:airnow:${type}:${id}`,
-    feature: (key) => `ext:airnow:${type}:${id}:${key}`,
+    device: `ext:airly:${type}:${id}`,
+    feature: (key) => `ext:airly:${type}:${id}:${key}`,
   }),
 };
-const LA = {
-  key: 'zip-90210',
-  zip: '90210',
-  house: null,
-  area: 'NW Coastal LA',
-  label: 'ZIP 90210',
-};
+const point = parseMeasurements(rebase(fixture('measurements_point.json')));
+const sensor = parseMeasurements(rebase(fixture('measurements_installation.json')));
 const HOME = {
   key: placeKey({ house: 'Main_House 2' }),
-  zip: null,
+  installationId: null,
   house: 'Main_House 2',
-  area: '',
-  label: 'Main house',
+  mode: 'point',
+  name: 'Main house',
+  features: optionalKeysOf(point),
 };
-const observations = parseObservations(fixture('observation_current_ziplatLong.json'));
-const [today, tomorrow] = parseForecast(fixture('forecast_current__zip.json')).days;
+const SENSOR = {
+  key: placeKey({ installationId: 204 }),
+  installationId: 204,
+  house: null,
+  name: 'Kraków, Mikołajska',
+  features: [],
+};
 const devices = (language, gladys = fakeGladys) => [
-  buildPlaceDevice(gladys, LA, language),
   buildPlaceDevice(gladys, HOME, language),
+  buildPlaceDevice(gladys, SENSOR, language),
 ];
 
 const PAIRS = [
-  [
-    DEVICE_FEATURE_CATEGORIES.AIRQUALITY_SENSOR,
-    DEVICE_FEATURE_TYPES.AIRQUALITY_SENSOR.AQI,
-    DEVICE_FEATURE_UNITS.AQI,
-  ],
-  [DEVICE_FEATURE_CATEGORIES.TEXT, DEVICE_FEATURE_TYPES.TEXT.TEXT, undefined],
+  [C.AIRQUALITY_SENSOR, T.AIRQUALITY_SENSOR.AQI, U.AQI],
+  [C.PM25_SENSOR, T.SENSOR.DECIMAL, U.MICROGRAM_PER_CUBIC_METER],
+  [C.PM10_SENSOR, T.SENSOR.DECIMAL, U.MICROGRAM_PER_CUBIC_METER],
+  [C.NO2_SENSOR, T.SENSOR.DECIMAL, U.MICROGRAM_PER_CUBIC_METER],
+  [C.O3_SENSOR, T.SENSOR.DECIMAL, U.MICROGRAM_PER_CUBIC_METER],
+  [C.SO2_SENSOR, T.SENSOR.DECIMAL, U.MICROGRAM_PER_CUBIC_METER],
+  [C.TEMPERATURE_SENSOR, T.SENSOR.DECIMAL, U.CELSIUS],
+  [C.HUMIDITY_SENSOR, T.SENSOR.DECIMAL, U.PERCENT],
+  [C.PRESSURE_SENSOR, T.SENSOR.DECIMAL, U.HECTO_PASCAL],
+  [C.TEXT, T.TEXT.TEXT, undefined],
 ];
 
 test('devices are never polled by Gladys: the integration has its own timer', () => {
@@ -97,49 +104,62 @@ test('category / type / unit pairs known to the Gladys front', () => {
   }
 });
 
-test('ids from the place as configured; names from the reporting area', () => {
-  const [la, home] = devices('fr');
-  assert.equal(la.external_id, 'ext:airnow:place:zip-90210');
-  assert.equal(la.name, 'AirNow NW Coastal LA');
-  assert.equal(home.external_id, 'ext:airnow:place:house-main_house-2');
-  assert.equal(home.name, 'AirNow Main house', 'before the first reading');
-  assert.equal(keyOfExternalId('ext:airnow:place:zip-90210:forecast_today'), 'zip-90210');
-  assert.equal(keyOfExternalId('ext:airnow:place:house-main_house-2'), 'house-main_house-2');
-  assert.equal(keyOfExternalId('nothing'), null);
-  assert.deepEqual(la.params, [
-    { name: 'AIRNOW_ZIP', value: '90210' },
-    { name: 'AIRNOW_REPORTING_AREA', value: 'NW Coastal LA' },
+test('ids from the place as configured, names from the place; optional features only grow', () => {
+  const [home, kraków] = devices('fr');
+  assert.equal(home.external_id, 'ext:airly:place:house-main_house-2');
+  assert.equal(home.name, 'Airly Main house');
+  assert.equal(kraków.external_id, 'ext:airly:place:installation-204');
+  assert.deepEqual(
+    kraków.features.map((f) => f.external_id.split(':').pop()),
+    ['caqi', 'level', 'pm25', 'pm10', 'forecast_caqi', 'forecast'],
+  );
+  assert.deepEqual(home.features.length, 6 + OPTIONAL_KEYS.length);
+  assert.deepEqual(optionalKeysOf(sensor), ['no2']);
+  assert.deepEqual(home.params, [
+    { name: 'AIRLY_HOUSE', value: 'Main_House 2' },
+    { name: 'AIRLY_MODE', value: 'point' },
   ]);
+  assert.deepEqual(kraków.params, [{ name: 'AIRLY_INSTALLATION_ID', value: '204' }]);
+  assert.equal(
+    keyOfExternalId('ext:airly:place:installation-204:forecast_caqi'),
+    'installation-204',
+  );
+  assert.equal(keyOfExternalId('ext:airly:place:house-main_house-2'), 'house-main_house-2');
+  assert.equal(keyOfExternalId('nothing'), null);
 });
 
-test('states: AQI values, the category and the forecast as texts; missing values untouched', () => {
+test('states: values, level and forecast as texts; what Airly did not give is left untouched', () => {
+  const peak = forecastPeak(point, NOW);
   const byKey = (states) =>
     Object.fromEntries(
       states.map((s) => [s.device_feature_external_id.split(':').pop(), s.state ?? s.text]),
     );
   assert.deepEqual(
-    byKey(buildPlaceStates(fakeGladys, LA.key, { observations, today, tomorrow }, 'de')),
+    byKey(buildPlaceStates(fakeGladys, HOME, point, peak, { language: 'de', timeZone: TZ })),
     {
-      aqi: 34,
-      pm25: 11,
-      ozone: 34,
-      pm10: 15,
-      category: 'Gut',
-      forecast_today: 53,
-      forecast_tomorrow: 53,
-      forecast: 'Morgen: Mäßig (PM2,5)',
+      caqi: 7,
+      level: 'Sehr gut',
+      pm25: 4.4,
+      pm10: 6.1,
+      temperature: 14.4,
+      humidity: 68.4,
+      pressure: 1019.9,
+      no2: 16,
+      o3: 41.5,
+      so2: 14,
+      forecast_caqi: 23,
+      forecast: 'Höchstwert in 24 Std.: 23, Sehr gut, um 15:00',
     },
   );
   assert.deepEqual(
-    buildPlaceStates(fakeGladys, LA.key, { observations: null, today: null, tomorrow: null }, 'en'),
-    [],
+    byKey(buildPlaceStates(fakeGladys, SENSOR, sensor, null, { language: 'en', timeZone: TZ })),
+    { caqi: 44, level: 'Good', pm25: 26.6, pm10: 29.4 },
+    'no forecast, NO₂ not created yet',
   );
-  assert.equal(
-    forecastLine({ ...tomorrow, actionDay: true }, 'Tomorrow', 'en'),
-    'Tomorrow: Moderate (PM2.5), air quality alert',
-  );
-  const smoke = { ...observations, aqi: 1200, pollutants: {} };
-  assert.equal(buildPlaceStates(fakeGladys, LA.key, { observations: smoke }, 'en')[0].state, 999);
+  assert.deepEqual(buildPlaceStates(fakeGladys, SENSOR, null, null, { language: 'en' }), []);
+  assert.equal(forecastLine(null, 'en'), '');
+  const smog = { ...sensor, caqi: 900 };
+  assert.equal(buildPlaceStates(fakeGladys, SENSOR, smog, null, { language: 'en' })[0].state, 500);
 });
 
 test('the discovery batch and the states pass the checks of the fake host API', async (t) => {
@@ -151,8 +171,11 @@ test('the discovery batch and the states pass the checks of the fake host API', 
   }
   await gladys.fake.deviceCreated(gladys.fake.discoveredDevices[0]);
   await gladys.publishStates(
-    buildPlaceStates(gladys, LA.key, { observations, today, tomorrow }, 'en'),
+    buildPlaceStates(gladys, HOME, point, forecastPeak(point, NOW), {
+      language: 'en',
+      timeZone: TZ,
+    }),
   );
-  assert.equal(gladys.fake.lastState(idsOf(gladys, LA.key).feature('aqi')), 34);
-  assert.equal(gladys.fake.lastState(idsOf(gladys, LA.key).feature('category')), 'Good');
+  assert.equal(gladys.fake.lastState(idsOf(gladys, HOME.key).feature('caqi')), 7);
+  assert.equal(gladys.fake.lastState(idsOf(gladys, HOME.key).feature('level')), 'Very good');
 });

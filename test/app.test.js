@@ -1,7 +1,7 @@
 // The whole integration against the fake Gladys of the SDK
 // (`@gladysassistant/integration-sdk/testing`), which checks the discovered
 // devices, the states and the scene events like the host API does, and a fake
-// AirNow API serving real answers of the 2026 services.
+// Airly API serving real answers of the API v2.
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -12,39 +12,41 @@ import { createApp, SCENE_ACTIONS, ACTIONS } from '../src/app.js';
 import { WIDGETS, WIDGET_ACTIONS } from '../src/widgets.js';
 import { TRIGGERS } from '../src/events.js';
 import {
-  fakeAirNow,
+  fakeAirly,
   storePath,
   silent,
+  rebase,
+  fixture,
   NOW,
   TZ,
   KEY,
-  NAPA,
-  NEVADA,
-  fixture,
+  KRAKOW,
+  NOWHERE,
 } from './helpers/fake-api.js';
 
-const CONFIG = { api_key: KEY, zip_1: '90210', house_2: 'napa-house', language: 'en' };
+const CONFIG = { api_key: KEY, house_1: 'home', installation_2: '204', language: 'en' };
 const HOUSES = [
-  { selector: 'napa-house', name: 'Napa house', ...NAPA },
-  { selector: 'desert', name: 'Desert', ...NEVADA },
+  { selector: 'home', name: 'Home', ...KRAKOW },
+  { selector: 'cabin', name: 'Cabin', ...NOWHERE },
   { selector: 'nowhere', name: 'No location' },
 ];
 const PREFIX = 'ext:test-integration';
-const LA = `${PREFIX}:place:zip-90210`;
-const NAPA_ID = `${PREFIX}:place:house-napa-house`;
+const HOME = `${PREFIX}:place:house-home`;
+const SENSOR = `${PREFIX}:place:installation-204`;
 const MINUTE = 60 * 1000;
 const HOUR = 60 * MINUTE;
 
 /**
  * @description The integration, connected to a fake Gladys and a fake API.
- * @param {object} [options] - `{ config, api, path, now }`.
+ * @param {object} [options] - `{ config, api, path, now, logger }`.
  * @returns {Promise<object>} `{ gladys, app, api, clock, path }`.
  */
 async function startApp({
   config = CONFIG,
-  api = fakeAirNow(),
+  api = fakeAirly(),
   path = storePath(),
   now = NOW,
+  logger = silent,
 } = {}) {
   const clock = { now };
   const gladys = createFakeGladys({ config, houses: HOUSES });
@@ -54,7 +56,7 @@ async function startApp({
     now: () => clock.now,
     timeZone: TZ,
     timers: false,
-    logger: silent,
+    logger,
   });
   await gladys.connect();
   await app.whenReady();
@@ -68,181 +70,231 @@ const created = async (gladys, externalId) => {
   return device;
 };
 const eventsOf = (gladys, key) => gladys.fake.sceneEvents.filter((event) => event.key === key);
+const paths = (api) => api.calls.map((call) => call.path);
 
-test('a ZIP code and a house become two devices named after their reporting area', async (t) => {
+test('a house and a sensor become two devices; one request per place, the address once', async (t) => {
   const { gladys, api } = await startApp();
   t.after(() => gladys.fake.shutdown());
   assert.deepEqual(
     gladys.fake.discoveredDevices.map((device) => [device.external_id, device.name]),
     [
-      [LA, 'AirNow NW Coastal LA'],
-      [NAPA_ID, 'AirNow Napa'],
+      [HOME, 'Airly Home'],
+      [SENSOR, 'Airly Kraków, Mikołajska'],
     ],
   );
-  // Two services per place, coordinates rounded, the key in the query.
-  assert.deepEqual(
-    api.calls.map((call) => [
-      call.service,
-      call.params.zipCode ?? `${call.params.latitude},${call.params.longitude}`,
-    ]),
-    [
-      ['observations', '90210'],
-      ['forecast', '90210'],
-      ['observations', '38.3191,-122.2998'],
-      ['forecast', '38.3191,-122.2998'],
-    ],
-  );
+  assert.deepEqual(paths(api), [
+    '/v2/measurements/point',
+    '/v2/installations/204',
+    '/v2/measurements/installation',
+  ]);
+  assert.deepEqual(api.calls[0].params, { lat: '50.0620', lng: '19.9410' });
   assert.equal(gladys.fake.connectionStatus.connected, true);
   assert.equal(
     gladys.fake.connectionStatus.message.en,
-    'Connected to AirNow: NW Coastal LA AQI 34 (Good), Napa AQI 52 (Moderate).',
+    'Connected to Airly: Home CAQI 7 (Very good), Kraków, Mikołajska CAQI 44 (Good). 3/100 requests today.',
   );
-  // First readings: a baseline, no event (no action day in the fixtures).
+  // First readings: a baseline, no event.
   assert.deepEqual(gladys.fake.sceneEvents, []);
 });
 
-test('created devices get the AQI, the pollutants, the category and the forecast', async (t) => {
+test('created devices get every value the place gave, the level and the forecast', async (t) => {
   const { gladys } = await startApp();
   t.after(() => gladys.fake.shutdown());
-  await created(gladys, LA);
-  assert.equal(gladys.fake.lastState(`${LA}:aqi`), 34);
-  assert.equal(gladys.fake.lastState(`${LA}:pm25`), 11);
-  assert.equal(gladys.fake.lastState(`${LA}:ozone`), 34);
-  assert.equal(gladys.fake.lastState(`${LA}:pm10`), 15);
-  assert.equal(gladys.fake.lastState(`${LA}:category`), 'Good');
-  assert.equal(gladys.fake.lastState(`${LA}:forecast_today`), 53);
-  assert.equal(gladys.fake.lastState(`${LA}:forecast_tomorrow`), 53);
-  assert.equal(gladys.fake.lastState(`${LA}:forecast`), 'Tomorrow: Moderate (PM2.5)');
+  await created(gladys, HOME);
+  const state = (key) => gladys.fake.lastState(`${HOME}:${key}`);
+  assert.equal(state('caqi'), 7);
+  assert.equal(state('level'), 'Very good');
+  assert.equal(state('pm25'), 4.4);
+  assert.equal(state('pm10'), 6.1);
+  assert.equal(state('temperature'), 14.4);
+  assert.equal(state('humidity'), 68.4);
+  assert.equal(state('pressure'), 1019.9);
+  assert.equal(state('no2'), 16);
+  assert.equal(state('forecast_caqi'), 23);
+  assert.equal(state('forecast'), 'Highest within 24 h: 23, Very good, at 3:00 PM');
+  await created(gladys, SENSOR);
+  assert.equal(gladys.fake.lastState(`${SENSOR}:caqi`), 44);
+  assert.equal(gladys.fake.lastState(`${SENSOR}:forecast`), undefined, 'no forecast for 204');
 });
 
-test('readings follow the hour: nothing before hh:35, observations then, forecast every 3 hours', async (t) => {
+test('the plan: a round every 50 minutes for two places with a free key, never sooner', async (t) => {
   const { gladys, app, api, clock } = await startApp();
   t.after(() => gladys.fake.shutdown());
   api.calls.length = 0;
-  clock.now += 20 * MINUTE; // 19:00 PDT
-  await app.readPlaces();
-  assert.equal(api.calls.length, 0, 'the 18:00 observation is still the last one');
-  clock.now += 15 * MINUTE; // 19:15... the next mark is 19:35
+  clock.now += 25 * MINUTE;
   await app.readPlaces();
   assert.equal(api.calls.length, 0);
-  clock.now += 20 * MINUTE; // 19:35
+  clock.now += 5 * MINUTE; // 30 minutes: 90 requests / 2 places = 45 rounds, every 32 min -> 35
   await app.readPlaces();
-  assert.deepEqual(
-    api.calls.map((call) => call.service),
-    ['observations', 'observations'],
-  );
-  clock.now += 3 * HOUR;
-  api.calls.length = 0;
+  assert.equal(api.calls.length, 0);
+  clock.now += 5 * MINUTE;
   await app.readPlaces();
-  assert.deepEqual(api.calls.map((call) => call.service).sort(), [
-    'forecast',
-    'forecast',
-    'observations',
-    'observations',
-  ]);
+  assert.deepEqual(paths(api), ['/v2/measurements/point', '/v2/measurements/installation']);
 });
 
-test('a category change fires air_quality_changed once, with its direction', async (t) => {
+test('the reserve: no automatic reading once only it remains; the user may still read', async (t) => {
+  const { gladys, app, api, clock } = await startApp();
+  t.after(() => gladys.fake.shutdown());
+  app.store.data.usage.count = 91;
+  api.calls.length = 0;
+  clock.now += 3 * HOUR;
+  await app.readPlaces();
+  assert.equal(api.calls.length, 0);
+  const read = await gladys.fake.action(ACTIONS.READ_NOW);
+  assert.match(read.data.message.en, /^Read now: Home CAQI 7/);
+  assert.equal(api.calls.length, 2);
+});
+
+test('a 429: no request until midnight UTC, then the readings resume', async (t) => {
+  const { gladys, app, api, clock } = await startApp();
+  t.after(() => gladys.fake.shutdown());
+  api.remaining = 0;
+  clock.now += 2 * HOUR;
+  await app.readPlaces();
+  assert.match(gladys.fake.connectionStatus.message.en, /daily limit of the key is reached/);
+  const calls = api.calls.length;
+  clock.now += 2 * HOUR;
+  await app.readPlaces();
+  const refused = await gladys.fake.widgetAction(
+    WIDGETS.AIR_QUALITY,
+    WIDGET_ACTIONS.REFRESH,
+    {},
+    { settings: {} },
+  );
+  assert.match(refused.data.message.en, /daily limit/);
+  assert.equal(api.calls.length, calls);
+  api.remaining = 100;
+  clock.now = Date.parse('2026-10-23T00:05:00Z');
+  await app.readPlaces();
+  assert.equal(api.calls.length, calls + 2);
+  assert.equal(gladys.fake.connectionStatus.message.en.endsWith('2/100 requests today.'), true);
+});
+
+test('a level change fires air_quality_changed once; a restart fires nothing again', async (t) => {
   const { gladys, app, api, clock, path } = await startApp();
   t.after(() => gladys.fake.shutdown());
-  const rows = fixture('observation_current_ziplatLong.json');
-  rows[0].nowcastAQI = 128;
-  rows[0].aqiCategoryName = 'Unhealthy for Sensitive Groups';
-  api.answers.observations[90210] = rows;
+  const worse = rebase(fixture('measurements_installation.json'), NOW + HOUR);
+  worse.current.indexes[0].value = 81.2;
+  api.answers.installation = worse;
   clock.now += HOUR;
   await app.readPlaces();
   assert.deepEqual(eventsOf(gladys, TRIGGERS.AIR_QUALITY_CHANGED), [
     {
       key: TRIGGERS.AIR_QUALITY_CHANGED,
       data: {
-        place: LA,
-        area: 'NW Coastal LA',
-        aqi: 128,
-        category: 'sensitive',
-        category_name: 'Unhealthy for sensitive groups',
-        previous_category: 'good',
+        place: SENSOR,
+        name: 'Kraków, Mikołajska',
+        caqi: 81,
+        level: 'high',
+        level_name: 'Poor',
+        previous_level: 'low',
         direction: 'worse',
-        pollutant: 'pm25',
-        pollutant_name: 'PM2.5',
+        pm25: 26.6,
+        pm10: 29.4,
       },
     },
   ]);
   clock.now += HOUR;
   await app.readPlaces();
-  assert.equal(eventsOf(gladys, TRIGGERS.AIR_QUALITY_CHANGED).length, 1, 'same category: nothing');
-  // A restart reads nothing fresh and fires nothing again.
+  assert.equal(eventsOf(gladys, TRIGGERS.AIR_QUALITY_CHANGED).length, 1, 'same level: nothing');
   await gladys.fake.shutdown();
   const again = await startApp({ api, path, now: clock.now });
   t.after(() => again.gladys.fake.shutdown());
   assert.deepEqual(again.gladys.fake.sceneEvents, []);
 });
 
-test('a new forecast fires forecast_updated, an action day fires action_day', async (t) => {
+test('a poor forecast fires pollution_expected once per episode', async (t) => {
   const { gladys, app, api, clock } = await startApp();
   t.after(() => gladys.fake.shutdown());
-  const rows = fixture('forecast_current__zip.json').map((row) =>
-    row.dateValid === '2026-09-10' && row.parameterName === 'OZONE'
-      ? {
-          ...row,
-          aqi: 151,
-          categoryNumber: 4,
-          categoryName: 'Unhealthy',
-          actionDay: true,
-          discussion: 'Heat and stagnant air.',
-        }
-      : row,
-  );
-  api.answers.forecast[90210] = rows;
-  clock.now += 3 * HOUR;
+  const smog = rebase(fixture('measurements_point.json'), NOW + HOUR);
+  smog.forecast[5].indexes[0].value = 88;
+  api.answers.point = smog;
+  clock.now += HOUR;
   await app.readPlaces();
-  const expected = {
-    place: LA,
-    area: 'NW Coastal LA',
-    date: '2026-09-10',
-    day: 'tomorrow',
-    aqi: 151,
-    category: 'unhealthy',
-    category_name: 'Unhealthy',
-    pollutant: 'ozone',
-    pollutant_name: 'Ozone',
-    action_day: true,
-    discussion: 'Heat and stagnant air.',
-  };
-  assert.deepEqual(eventsOf(gladys, TRIGGERS.FORECAST_UPDATED), [
-    { key: TRIGGERS.FORECAST_UPDATED, data: expected },
-  ]);
-  assert.deepEqual(eventsOf(gladys, TRIGGERS.ACTION_DAY), [
-    { key: TRIGGERS.ACTION_DAY, data: expected },
-  ]);
-  clock.now += 3 * HOUR;
-  await app.readPlaces();
-  assert.equal(eventsOf(gladys, TRIGGERS.ACTION_DAY).length, 1, 'once');
-});
-
-test('the scene action reads a place and gives a sentence', async (t) => {
-  const { gladys } = await startApp({ config: { ...CONFIG, language: 'fr' } });
-  t.after(() => gladys.fake.shutdown());
-  const answer = await gladys.fake.sceneAction(SCENE_ACTIONS.GET_AIR_QUALITY, { place: NAPA_ID });
-  assert.deepEqual(answer.data.outputs, {
-    aqi: 52,
-    category: 'moderate',
-    category_name: 'Modéré',
-    pollutant_name: 'PM2,5',
-    area: 'Napa',
-    forecast_today_aqi: 61,
-    forecast_tomorrow_aqi: 50,
-    forecast_tomorrow_category: 'good',
-    action_day: false,
-    summary: 'Qualité de l’air à Napa : Modéré, AQI 52 (PM2,5). Demain : Bon (PM2,5).',
+  const [event] = eventsOf(gladys, TRIGGERS.POLLUTION_EXPECTED);
+  assert.deepEqual(event.data, {
+    place: HOME,
+    name: 'Home',
+    caqi: 88,
+    level: 'high',
+    level_name: 'Poor',
+    time: '1:00 AM',
+    hours: 6,
+    current_caqi: 7,
   });
+  clock.now += HOUR;
+  await app.readPlaces();
+  assert.equal(eventsOf(gladys, TRIGGERS.POLLUTION_EXPECTED).length, 1, 'same episode');
 });
 
-test('widgets: valid contents in every language, for both places', async (t) => {
-  const { gladys } = await startApp();
+test('PM2.5 over the WHO guideline fires who_limit_exceeded once', async (t) => {
+  const { gladys, app, api, clock } = await startApp();
   t.after(() => gladys.fake.shutdown());
+  const dusty = rebase(fixture('measurements_point.json'), NOW + HOUR);
+  dusty.current.standards[0].percent = 180.4;
+  dusty.current.values[1].value = 27.06;
+  api.answers.point = dusty;
+  clock.now += HOUR;
+  await app.readPlaces();
+  assert.deepEqual(
+    eventsOf(gladys, TRIGGERS.WHO_LIMIT_EXCEEDED).map((event) => event.data),
+    [
+      {
+        place: HOME,
+        name: 'Home',
+        pollutant: 'pm25',
+        pollutant_name: 'PM2.5',
+        value: 27.1,
+        limit: 15,
+        percent: 180,
+      },
+    ],
+  );
+  clock.now += HOUR;
+  await app.readPlaces();
+  assert.equal(eventsOf(gladys, TRIGGERS.WHO_LIMIT_EXCEEDED).length, 1);
+});
+
+test('the scene action reads a place and gives a sentence, without firing an event', async (t) => {
+  const { gladys, api, clock } = await startApp({ config: { ...CONFIG, language: 'fr' } });
+  t.after(() => gladys.fake.shutdown());
+  const answer = await gladys.fake.sceneAction(SCENE_ACTIONS.GET_AIR_QUALITY, { place: HOME });
+  assert.deepEqual(answer.data.outputs, {
+    name: 'Home',
+    caqi: 7,
+    level: 'very_low',
+    level_name: 'Très bonne',
+    pm1: 2.8,
+    pm25: 4.4,
+    pm10: 6.1,
+    temperature: 14.4,
+    humidity: 68.4,
+    pressure: 1019.9,
+    pm25_who_percent: 29,
+    pm10_who_percent: 15,
+    forecast_caqi: 23,
+    forecast_level: 'very_low',
+    forecast_time: '15:00',
+    summary:
+      'Qualité de l’air à Home : Très bonne, CAQI 7, PM2,5 4,4 µg/m³. Maximum sous 24 heures : très bonne (23) à 15:00.',
+  });
+  // Past an hour, the action reads again on the reserve, and stays quiet.
+  const worse = rebase(fixture('measurements_point.json'), NOW + 2 * HOUR);
+  worse.current.indexes[0].value = 60;
+  api.answers.point = worse;
+  clock.now += 2 * HOUR;
+  const again = await gladys.fake.sceneAction(SCENE_ACTIONS.GET_AIR_QUALITY, { place: HOME });
+  assert.equal(again.data.outputs.caqi, 60);
+  assert.equal(eventsOf(gladys, TRIGGERS.AIR_QUALITY_CHANGED).length, 1);
+});
+
+test('widgets: valid contents in every language, for both places; they never read', async (t) => {
+  const { gladys, api } = await startApp();
+  t.after(() => gladys.fake.shutdown());
+  const calls = api.calls.length;
   for (const language of ['en', 'fr', 'de', 'es']) {
     for (const key of Object.values(WIDGETS)) {
-      for (const place of [undefined, LA, NAPA_ID]) {
+      for (const place of [undefined, HOME, SENSOR]) {
         const answer = await gladys.fake.widgetGet(key, {
           language,
           settings: place ? { place } : {},
@@ -256,36 +308,28 @@ test('widgets: valid contents in every language, for both places', async (t) => 
       }
     }
   }
+  assert.equal(api.calls.length, calls);
+  const now = await gladys.fake.widgetGet(WIDGETS.AIR_QUALITY, { language: 'en' });
+  assert.deepEqual(
+    now.data.content.components
+      .filter((c) => c.type === 'value')
+      .map((tile) => [tile.label, tile.value]),
+    [
+      ['CAQI · Very good', 7],
+      ['PM1', '2.8'],
+      ['PM2.5', '4.4'],
+      ['PM10', '6.1'],
+      ['Temperature', '14.4'],
+    ],
+  );
   const forecast = await gladys.fake.widgetGet(WIDGETS.FORECAST, {
     language: 'en',
-    settings: { place: NAPA_ID },
+    settings: { place: SENSOR },
   });
-  const list = forecast.data.content.components.find((c) => c.type === 'card-list');
-  assert.deepEqual(
-    list.items.map((item) => [item.title, item.subtitle, item.badge.text]),
-    [
-      ['Today', 'Ozone · AQI 61', 'Moderate'],
-      ['Tomorrow', 'PM2.5 · AQI 50', 'Good'],
-      ['Fri 11', 'Ozone', 'Good'],
-      ['Sat 12', 'Ozone', 'Good'],
-      ['Sun 13', 'PM2.5', 'Good'],
-      ['Mon 14', 'Ozone', 'Good'],
-    ],
-  );
-  const now = await gladys.fake.widgetGet(WIDGETS.AIR_QUALITY, { language: 'en' });
-  const tiles = now.data.content.components.filter((c) => c.type === 'value');
-  assert.deepEqual(
-    tiles.map((tile) => [tile.label, tile.value, tile.color]),
-    [
-      ['AQI · Good', 34, 'success'],
-      ['PM2.5', 11, 'success'],
-      ['Ozone', 34, 'success'],
-      ['PM10', 15, 'success'],
-    ],
-  );
+  assert.match(forecast.data.content.components[1].text, /No forecast for this place yet/);
 });
 
-test('the Refresh button reads again only when AirNow may have something new', async (t) => {
+test('the Refresh button reads again only past 15 minutes', async (t) => {
   const { gladys, api, clock } = await startApp();
   t.after(() => gladys.fake.shutdown());
   api.calls.length = 0;
@@ -293,45 +337,59 @@ test('the Refresh button reads again only when AirNow may have something new', a
     WIDGETS.AIR_QUALITY,
     WIDGET_ACTIONS.REFRESH,
     {},
-    { settings: { place: LA } },
+    { settings: { place: HOME } },
   );
-  assert.equal(cached.data.message.en, 'Already up to date: AirNow updates once an hour.');
+  assert.match(cached.data.message.en, /^Already up to date/);
   assert.equal(api.calls.length, 0);
   clock.now += 20 * MINUTE;
   const read = await gladys.fake.widgetAction(
     WIDGETS.FORECAST,
     WIDGET_ACTIONS.REFRESH,
     {},
-    { settings: { place: LA } },
+    { settings: { place: HOME } },
   );
-  assert.equal(read.data.message.en, 'Read again: AQI 34.');
-  assert.deepEqual(
-    api.calls.map((call) => call.params.zipCode),
-    ['90210'],
-  );
+  assert.equal(read.data.message.en, 'Read again: CAQI 7.');
+  assert.equal(api.calls.length, 2, 'one round: every place');
 });
 
-test('places without data, without location, unknown, or a bad ZIP code are reported', async (t) => {
+test('places without sensor, without location, unknown, or a bad number are reported', async (t) => {
   const { gladys, app } = await startApp({
-    config: { api_key: KEY, house_1: 'desert', house_2: 'nowhere', zip_3: '9021' },
+    config: { api_key: KEY, house_1: 'cabin', house_2: 'nowhere', installation_3: 'Kraków' },
   });
   t.after(() => gladys.fake.shutdown());
   assert.deepEqual(
     app.getPlaceErrors().map(({ slot, err }) => [slot, err.kind]),
     [
       [2, 'house_no_location'],
-      [3, 'invalid_zip'],
+      [3, 'invalid_installation'],
     ],
   );
   assert.equal(gladys.fake.connectionStatus.connected, false);
   assert.match(gladys.fake.connectionStatus.message.en, /^0 of 3 places read\./);
+  assert.deepEqual(
+    gladys.fake.discoveredDevices.map((d) => d.features.length),
+    [6],
+  );
   const widget = await gladys.fake.widgetGet(WIDGETS.AIR_QUALITY, { language: 'fr' });
-  assert.match(widget.data.content.components[0].text, /AirNow n’a pas de données près de Desert/);
+  assert.match(
+    widget.data.content.components[0].text,
+    /Airly n’a pas encore de capteur près de Cabin/,
+  );
   const read = await gladys.fake.action(ACTIONS.READ_NOW);
   assert.match(
     read.data.message.en,
-    /AirNow has no data near Desert.*no location in Gladys.*“9021” is not a ZIP code/,
+    /no sensor near Cabin.*no location in Gladys.*“Kraków” is not an Airly sensor number/,
   );
+});
+
+test('an unknown sensor, and the nearest sensor of a house', async (t) => {
+  const { gladys, api } = await startApp({
+    config: { api_key: KEY, installation_1: '999', house_2: 'home', house_mode: 'nearest' },
+  });
+  t.after(() => gladys.fake.shutdown());
+  assert.ok(paths(api).includes('/v2/measurements/nearest'));
+  assert.match(gladys.fake.connectionStatus.message.en, /does not know the sensor #999/);
+  assert.equal(gladys.fake.connectionStatus.connected, true, 'one place of two read');
 });
 
 test('a refused key stops the readings until the configuration changes', async (t) => {
@@ -341,10 +399,10 @@ test('a refused key stops the readings until the configuration changes', async (
   assert.deepEqual(gladys.fake.connectionStatus, {
     connected: false,
     message: {
-      en: 'AirNow refused the API key: check it on docs.airnowapi.org.',
-      fr: 'AirNow a refusé la clé d’API : vérifiez-la sur docs.airnowapi.org.',
-      de: 'AirNow hat den API-Schlüssel abgelehnt: prüfe ihn auf docs.airnowapi.org.',
-      es: 'AirNow rechazó la clave de API: compruébela en docs.airnowapi.org.',
+      en: 'Airly refused the API key: check it on developer.airly.org.',
+      fr: 'Airly a refusé la clé d’API : vérifiez-la sur developer.airly.org.',
+      de: 'Airly hat den API-Schlüssel abgelehnt: prüfe ihn auf developer.airly.org.',
+      es: 'Airly rechazó la clave de API: compruébela en developer.airly.org.',
     },
   });
   clock.now += 2 * HOUR;
@@ -355,11 +413,11 @@ test('a refused key stops the readings until the configuration changes', async (
 });
 
 test('offline: the error is reported, the next try waits 15 minutes', async (t) => {
-  const api = fakeAirNow();
+  const api = fakeAirly();
   api.offline = true;
   const { gladys, app, clock } = await startApp({ api });
   t.after(() => gladys.fake.shutdown());
-  assert.match(gladys.fake.connectionStatus.message.en, /AirNow does not answer/);
+  assert.match(gladys.fake.connectionStatus.message.en, /Airly does not answer/);
   const tries = api.calls.length;
   clock.now += 5 * MINUTE;
   await app.readPlaces();
@@ -370,34 +428,42 @@ test('offline: the error is reported, the next try waits 15 minutes', async (t) 
   assert.equal(gladys.fake.connectionStatus.connected, true);
 });
 
+test('a restart reads nothing fresh: the readings and the usage are kept in /data', async (t) => {
+  const { gladys, api, clock, path } = await startApp();
+  await gladys.fake.shutdown();
+  const calls = api.calls.length;
+  clock.now += 10 * MINUTE;
+  const again = await startApp({ api, path, now: clock.now });
+  t.after(() => again.gladys.fake.shutdown());
+  assert.equal(api.calls.length, calls);
+  assert.equal(again.app.store.data.usage.count, 3);
+  assert.equal(again.gladys.fake.connectionStatus.connected, true);
+});
+
 test('no key, no place: clear messages, no request', async (t) => {
   const { gladys, api } = await startApp({ config: {} });
   t.after(() => gladys.fake.shutdown());
   assert.deepEqual(api.calls, []);
-  assert.match(gladys.fake.connectionStatus.message.en, /Enter your AirNow API key/);
+  assert.match(gladys.fake.connectionStatus.message.en, /Enter your Airly API key/);
   const widget = await gladys.fake.widgetGet(WIDGETS.FORECAST, { language: 'es' });
   assert.match(widget.data.content.components[0].text, /Introduzca su clave/);
   const second = await startApp({ config: { api_key: KEY } });
   t.after(() => second.gladys.fake.shutdown());
-  assert.match(second.gladys.fake.connectionStatus.message.en, /Choose a house or a ZIP code/);
+  assert.match(second.gladys.fake.connectionStatus.message.en, /Choose a house or an Airly sensor/);
+  assert.deepEqual(second.api.calls, []);
 });
 
-test('the diagnostic never writes the key', async (t) => {
+test('the diagnostic never writes the key nor the coordinates', async (t) => {
   const logged = [];
-  const gladys = createFakeGladys({ config: CONFIG, houses: HOUSES });
-  createApp(gladys, {
-    fetch: fakeAirNow(),
-    storePath: storePath(),
-    now: () => NOW,
-    timeZone: TZ,
-    timers: false,
+  const { gladys } = await startApp({
     logger: { ...silent, info: (line) => logged.push(line) },
   });
-  await gladys.connect();
   t.after(() => gladys.fake.shutdown());
   const answer = await gladys.fake.action(ACTIONS.DIAGNOSTIC);
   assert.match(answer.data.message.en, /Diagnostic written/);
-  const report = logged.filter((line) => line.startsWith('AirNow diagnostic')).join('');
+  const report = logged.filter((line) => line.startsWith('Airly diagnostic')).join('');
   assert.match(report, /"apiKey":"set"/);
+  assert.match(report, /"intervalMinutes":35/);
   assert.doesNotMatch(report, new RegExp(KEY));
+  assert.doesNotMatch(report, /50\.06|19\.94/);
 });

@@ -38,7 +38,8 @@ function createStore({ path = DEFAULT_PATH, logger } = {}) {
         const raw = JSON.parse(await readFile(path, 'utf8'));
         const base = EMPTY();
         const value = raw && typeof raw === 'object' ? raw : {};
-        const part = (node) => (node && typeof node === 'object' && !Array.isArray(node) ? node : {});
+        const part = (node) =>
+          node && typeof node === 'object' && !Array.isArray(node) ? node : {};
         store.data.usage = value.usage && typeof value.usage === 'object' ? value.usage : null;
         store.data.places = { ...part(value.places) };
         store.data.seen = { ...base.seen };

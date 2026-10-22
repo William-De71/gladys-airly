@@ -62,7 +62,8 @@ test('a sensor without forecast: the hours without a CAQI are left out', () => {
 test('no sensor near the point: no_data, never a CAQI of 0', () => {
   assert.throws(
     () => parseMeasurements(rebase(fixture('measurements_no_station.json'))),
-    (err) => err instanceof AirlyError && err.kind === 'no_data' && /no Airly sensors/.test(err.message),
+    (err) =>
+      err instanceof AirlyError && err.kind === 'no_data' && /no Airly sensors/.test(err.message),
   );
 });
 
@@ -74,7 +75,12 @@ test('the forecast peak: the highest CAQI to come within the window, the first o
   assert.ok(peak.at > NOW);
   const soon = forecastPeak(reading, NOW, 3 * HOUR);
   assert.ok(soon.caqi < peak.caqi);
-  const tie = { forecast: [{ at: NOW + HOUR, caqi: 50 }, { at: NOW + 2 * HOUR, caqi: 50 }] };
+  const tie = {
+    forecast: [
+      { at: NOW + HOUR, caqi: 50 },
+      { at: NOW + 2 * HOUR, caqi: 50 },
+    ],
+  };
   assert.equal(forecastPeak(tie, NOW).at, NOW + HOUR);
   assert.equal(forecastPeak({ forecast: [{ at: NOW - HOUR, caqi: 90 }] }, NOW), null);
 });

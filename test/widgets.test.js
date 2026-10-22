@@ -3,100 +3,98 @@
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { validateWidgetContent } from '@gladysassistant/integration-sdk';
+import { validateWidgetContent, WIDGET_COLORS } from '@gladysassistant/integration-sdk';
 
 import {
   buildAirQualityWidget,
   buildForecastWidget,
   messageContent,
   colorOf,
+  whoColor,
 } from '../src/widgets.js';
-import { parseObservations, parseForecast } from '../src/parse.js';
-import { CATEGORY_KEYS } from '../src/aqi.js';
+import { parseMeasurements, forecastPeak } from '../src/parse.js';
+import { LEVEL_KEYS } from '../src/caqi.js';
 import { LANGUAGES } from '../src/i18n.js';
-import { fixture, TZ } from './helpers/fake-api.js';
+import { fixture, rebase, NOW, TZ } from './helpers/fake-api.js';
 
+const HOUR = 60 * 60 * 1000;
 const assertValid = (content, label) => assert.deepEqual(validateWidgetContent(content), [], label);
-const place = { area: 'NW Coastal LA', label: 'ZIP 90210' };
-const observations = parseObservations(fixture('observation_current_ziplatLong.json'));
-const napa = parseForecast(fixture('forecast_current__latlong.json'));
+const place = { name: 'Kraków, Mikołajska — a long name of a place to clip somewhere' };
+const point = parseMeasurements(rebase(fixture('measurements_point.json')));
+const sensor = parseMeasurements(rebase(fixture('measurements_installation.json')));
 
-test('air quality: every category, every language, missing pollutants, no observation', () => {
+test('air quality: every level, every language, a sensor without weather, no reading', () => {
   for (const language of LANGUAGES) {
-    for (const category of CATEGORY_KEYS) {
-      const reading = {
-        ...observations,
-        category,
-        aqi: 420,
-        pollutants: { pm25: { aqi: 420, category } },
-      };
+    for (const level of LEVEL_KEYS) {
       const content = buildAirQualityWidget({
         place,
-        observations: reading,
+        reading: { ...point, caqi: 420, level },
         language,
         timeZone: TZ,
       });
-      assertValid(content, `${language} ${category}`);
+      assertValid(content, `${language} ${level}`);
       assert.ok(content.components.length <= 8);
     }
-    assertValid(
-      buildAirQualityWidget({ place, observations: null, language, timeZone: TZ }),
+    assertValid(buildAirQualityWidget({ place, reading: sensor, language, timeZone: TZ }));
+    assertValid(buildAirQualityWidget({ place, reading: null, language, timeZone: TZ }));
+  }
+});
+
+test('air quality: CAQI tile in the color of its level, particles against the WHO values', () => {
+  const content = buildAirQualityWidget({ place, reading: sensor, language: 'fr', timeZone: TZ });
+  const tiles = content.components.filter((c) => c.type === 'value');
+  assert.deepEqual(
+    tiles.map((tile) => [tile.label, tile.value, tile.unit, tile.color]),
+    [
+      ['CAQI · Bonne', 44, undefined, WIDGET_COLORS.SUCCESS],
+      ['PM2.5', '26,6', 'µg/m³', WIDGET_COLORS.WARNING],
+      ['PM10', '29,4', 'µg/m³', WIDGET_COLORS.SUCCESS],
+    ],
+  );
+  assert.match(content.components[0].text, /^Kraków, Mikołajska.* · Mesuré à \d\d:\d\d · Airly$/);
+  assert.equal(whoColor(250), WIDGET_COLORS.DANGER);
+  assert.equal(whoColor(undefined), undefined);
+  assert.equal(colorOf('very_high'), WIDGET_COLORS.DANGER);
+  assert.equal(colorOf(null), WIDGET_COLORS.NEUTRAL);
+});
+
+test('forecast: one chart of the last and next 24 hours, the peak, a warning when poor', () => {
+  for (const language of LANGUAGES) {
+    const content = buildForecastWidget({
+      place,
+      reading: point,
+      peak: forecastPeak(point, NOW),
       language,
+      timeZone: TZ,
+      now: NOW,
+    });
+    assertValid(content, language);
+    const chart = content.components.find((c) => c.type === 'chart');
+    assert.equal(chart.series.length, 2);
+    assert.equal(chart.series[0].points.length, 25, '24 hours and the hour now');
+    assert.equal(chart.series[1].points[0].t, chart.series[0].points.at(-1).t, 'joined');
+    assert.ok(!content.components.some((c) => c.variant === 'body'), 'no warning in clean air');
+    const smog = {
+      ...point,
+      forecast: [{ at: NOW + 3 * HOUR, caqi: 110, pm25: 80, pm10: 120 }],
+    };
+    const warned = buildForecastWidget({
+      place,
+      reading: smog,
+      peak: forecastPeak(smog, NOW),
+      language,
+      timeZone: TZ,
+      now: NOW,
+    });
+    assertValid(warned, `${language} warning`);
+    assert.ok(warned.components.some((c) => c.variant === 'body'));
+    assertValid(
+      buildForecastWidget({ place, reading: sensor, peak: null, language, timeZone: TZ, now: NOW }),
     );
   }
-  const content = buildAirQualityWidget({ place, observations, language: 'en', timeZone: TZ });
-  assert.equal(content.components[0].text, 'NW Coastal LA · Observed 5:00 PM');
-  assert.match(
-    content.components.find((c) => c.variant === 'body').text,
-    /Preliminary data: South Coast AQMD via U\.S\. EPA AirNow\.$/,
-  );
 });
 
-test('forecast: six days, alerts in the body, nothing issued', () => {
-  const alert = structuredClone(napa);
-  alert.days[0] = {
-    ...alert.days[0],
-    actionDay: true,
-    category: 'unhealthy',
-    discussion: 'Smoke from the north.',
-  };
-  for (const language of LANGUAGES) {
-    for (const forecast of [napa, alert, null]) {
-      const content = buildForecastWidget({ place, forecast, today: '2026-09-09', language });
-      assertValid(content, language);
-      assert.ok(content.components.filter((c) => c.type === 'text').length <= 2);
-    }
-  }
-  const content = buildForecastWidget({
-    place,
-    forecast: alert,
-    today: '2026-09-09',
-    language: 'en',
-  });
-  const list = content.components.find((c) => c.type === 'card-list');
-  assert.equal(list.items[0].title, 'Today · ⚠ air quality alert');
-  assert.equal(list.items[0].badge.color, 'danger');
-  assert.match(list.items[0].description, /Smoke from the north\.$/);
-  assert.match(
-    content.components.find((c) => c.variant === 'body').text,
-    /^Air quality alert announced for today:/,
-  );
-  const later = buildForecastWidget({ place, forecast: napa, today: '2026-09-13', language: 'en' });
-  assert.equal(
-    later.components.find((c) => c.type === 'card-list').items.length,
-    2,
-    'past days dropped',
-  );
-});
-
-test('colors and messages', () => {
-  assert.deepEqual(CATEGORY_KEYS.map(colorOf), [
-    'success',
-    'warning',
-    'warning',
-    'danger',
-    'danger',
-    'danger',
-  ]);
-  assertValid(messageContent('x'.repeat(500), { refresh: true }), 'message');
+test('a message, with or without the Refresh button', () => {
+  assertValid(messageContent('x'.repeat(400), { refresh: true }));
+  assert.equal(messageContent('Hi').components.length, 1);
 });

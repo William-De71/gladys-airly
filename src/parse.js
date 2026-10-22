@@ -109,7 +109,11 @@ function parseMeasurements(data) {
   }
   const hours = (list, map) =>
     (Array.isArray(list) ? list : [])
-      .map((period) => ({ at: instant(period?.tillDateTime), caqi: caqiOf(period), ...map(period) }))
+      .map((period) => ({
+        at: instant(period?.tillDateTime),
+        caqi: caqiOf(period),
+        ...map(period),
+      }))
       .filter((point) => point.at !== null && point.caqi !== null)
       .sort((a, b) => a.at - b.at);
   return {

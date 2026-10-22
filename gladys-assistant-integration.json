@@ -200,6 +200,12 @@
         "fr": "Options",
         "de": "Optionen",
         "es": "Opciones"
+      },
+      "description": {
+        "en": "The integration reads every place in one round, as often as the daily limit of the key allows: every 30 minutes with one place, 35 with two, 50 with three (free key). A few requests stay in reserve for the Read now button, the Refresh button of the widgets and the scene action.",
+        "fr": "L’intégration lit tous les lieux en une seule tournée, aussi souvent que la limite quotidienne de la clé le permet : toutes les 30 minutes avec un lieu, 35 avec deux, 50 avec trois (clé gratuite). Quelques requêtes restent en réserve pour le bouton Lire maintenant, le bouton Actualiser des widgets et l’action de scène.",
+        "de": "Die Integration liest alle Orte in einer Runde, so oft das Tageslimit des Schlüssels es erlaubt: alle 30 Minuten mit einem Ort, 35 mit zwei, 50 mit drei (kostenloser Schlüssel). Einige Anfragen bleiben in Reserve für den Knopf Jetzt lesen, den Knopf Aktualisieren der Widgets und die Szenenaktion.",
+        "es": "La integración lee todos los lugares en una sola ronda, tan a menudo como lo permite el límite diario de la clave: cada 30 minutos con un lugar, 35 con dos, 50 con tres (clave gratuita). Algunas solicitudes quedan en reserva para el botón Leer ahora, el botón Actualizar de los widgets y la acción de escena."
       }
     },
     {

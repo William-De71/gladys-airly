@@ -63,7 +63,10 @@ test('errors by kind: refused key, unknown sensor, nothing near, daily limit, of
     'no_data',
   );
   api.remaining = 0;
-  assert.equal(await kind(client(api).measurements({ installationId: INSTALLATION })), 'rate_limit');
+  assert.equal(
+    await kind(client(api).measurements({ installationId: INSTALLATION })),
+    'rate_limit',
+  );
   api.offline = true;
   assert.equal(await kind(client(api).installation(INSTALLATION)), 'unreachable');
   assert.equal(kindOf(400), 'invalid');

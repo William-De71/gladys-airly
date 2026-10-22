@@ -5,11 +5,12 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync, statSync } from 'node:fs';
 
-import { TRIGGERS, DAY_KEYS, AIR_QUALITY_OUTPUTS } from '../src/events.js';
+import { TRIGGERS, AIR_QUALITY_OUTPUTS } from '../src/events.js';
 import { SCENE_ACTIONS, ACTIONS } from '../src/app.js';
 import { WIDGETS } from '../src/widgets.js';
-import { CATEGORY_KEYS } from '../src/aqi.js';
-import { MAX_PLACES, AUTO_LANGUAGE, INTERNAL_KEYS } from '../src/config.js';
+import { LEVEL_KEYS, ALERT_LEVELS } from '../src/caqi.js';
+import { WHO_POLLUTANTS } from '../src/parse.js';
+import { MAX_PLACES, AUTO_LANGUAGE, HOUSE_MODES, INTERNAL_KEYS } from '../src/config.js';
 import { LANGUAGES } from '../src/i18n.js';
 
 const read = (path) => JSON.parse(readFileSync(new URL(path, import.meta.url), 'utf8'));
@@ -21,21 +22,21 @@ const source = (path) => readFileSync(new URL(path, import.meta.url), 'utf8');
 
 test('a device integration, in lockstep with package.json, at 0.x until 1.0.0 is decided', () => {
   assert.equal(manifest.type, 'device');
-  assert.equal(manifest.name, 'AirNow');
+  assert.equal(manifest.name, 'Airly');
   assert.equal(manifest.version, pkg.version);
-  assert.equal(manifest.docker_image, `ghcr.io/william-de71/gladys-airnow:${pkg.version}`);
+  assert.equal(manifest.docker_image, `ghcr.io/william-de71/gladys-airly:${pkg.version}`);
   assert.equal(
     manifest.cover_image,
-    'https://raw.githubusercontent.com/William-De71/gladys-airnow/main/cover.jpg',
+    'https://raw.githubusercontent.com/William-De71/gladys-airly/main/cover.jpg',
   );
   assert.equal(pkg.license, 'Apache-2.0');
   assert.deepEqual(Object.keys(pkg.dependencies), ['@gladysassistant/integration-sdk']);
 });
 
-test('declares the cloud transport only: the AirNow API, over HTTPS', () => {
+test('declares the cloud transport only: the Airly API, over HTTPS', () => {
   assert.deepEqual(manifest.transports, ['cloud']);
   assert.doesNotMatch(source('../src/app.js'), /publishTransports|GLADYS_PREFER_LOCAL/);
-  assert.match(source('../src/airnow-api.js'), /'https:\/\/www\.airnowapi\.org'/);
+  assert.match(source('../src/airly-api.js'), /'https:\/\/airapi\.airly\.eu'/);
 });
 
 test('requires the Gladys of the house picker; the location permission only', () => {
@@ -80,17 +81,21 @@ test('declares exactly the scene triggers, actions and widgets the code handles'
   );
 });
 
-test('the configuration of the code: the key as a secret, three places', () => {
+test('the configuration of the code: the key as a secret, three places, two modes', () => {
   const config = byKey(manifest.config_schema);
   assert.equal(config.get('api_key').type, 'secret');
   for (let slot = 1; slot <= MAX_PLACES; slot += 1) {
     assert.equal(config.get(`house_${slot}`).source, 'houses');
-    assert.equal(config.get(`zip_${slot}`).type, 'string');
+    assert.equal(config.get(`installation_${slot}`).type, 'string');
   }
-  assert.equal(config.get(`zip_${MAX_PLACES + 1}`), undefined);
+  assert.equal(config.get(`installation_${MAX_PLACES + 1}`), undefined);
   assert.equal(config.get(INTERNAL_KEYS.language), undefined);
+  assert.deepEqual(values(config.get('house_mode')), HOUSE_MODES);
+  assert.equal(config.get('house_mode').default, HOUSE_MODES[0]);
   assert.ok(
-    config.get('intro').links.every((link) => link.url.startsWith('https://docs.airnowapi.org/')),
+    config
+      .get('intro')
+      .links.every((link) => /^https:\/\/(developer\.)?airly\.org\//.test(link.url)),
   );
   const language = config.get('language');
   assert.deepEqual(values(language), [AUTO_LANGUAGE, ...LANGUAGES]);
@@ -100,19 +105,20 @@ test('the trigger filters are the values the events carry', () => {
   for (const trigger of manifest.scene_triggers) {
     const fields = byKey(trigger.fields);
     assert.equal(fields.get('place').source, 'devices', trigger.key);
-    if (fields.has('category')) {
-      assert.deepEqual(values(fields.get('category')), CATEGORY_KEYS, trigger.key);
-    }
-    if (fields.has('day')) {
-      assert.deepEqual(values(fields.get('day')), DAY_KEYS, trigger.key);
+    if (fields.has('pollutant')) {
+      assert.deepEqual(values(fields.get('pollutant')), WHO_POLLUTANTS, trigger.key);
     }
     const variables = trigger.variables.map((v) => v.key);
     for (const key of fields.keys()) {
       assert.ok(variables.includes(key), `${trigger.key}: ${key} is also a variable`);
     }
   }
-  const changed = byKey(byKey(manifest.scene_triggers).get(TRIGGERS.AIR_QUALITY_CHANGED).fields);
+  const triggers = byKey(manifest.scene_triggers);
+  const changed = byKey(triggers.get(TRIGGERS.AIR_QUALITY_CHANGED).fields);
+  assert.deepEqual(values(changed.get('level')), LEVEL_KEYS);
   assert.deepEqual(values(changed.get('direction')), ['worse', 'better']);
+  const expected = byKey(triggers.get(TRIGGERS.POLLUTION_EXPECTED).fields);
+  assert.deepEqual(values(expected.get('level')), ALERT_LEVELS);
 });
 
 test('limits of the store: counts, timeouts, sizes, no secret in widget settings', () => {

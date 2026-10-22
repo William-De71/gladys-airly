@@ -364,8 +364,7 @@ function createApp(
         };
         if (entry.installationId) {
           place.where = { installationId: entry.installationId };
-          place.name =
-            stateOf(place).installation?.name || `#${entry.installationId}`;
+          place.name = stateOf(place).installation?.name || `#${entry.installationId}`;
         } else {
           houses ??= await gladys.getHouses().catch((err) => {
             logger.warn(`Unable to read the houses: ${err.message}`);
@@ -485,7 +484,8 @@ function createApp(
       state.features = [...optional].sort();
       authError = null;
     } catch (err) {
-      const error = err instanceof AirlyError ? err : new AirlyError('failed', String(err?.message));
+      const error =
+        err instanceof AirlyError ? err : new AirlyError('failed', String(err?.message));
       logger.warn(`Airly ${place.name} (${error.kind}): ${error.message}`);
       state.error = { kind: error.kind, message: error.message };
       if (error.kind === 'no_data') {
@@ -527,7 +527,10 @@ function createApp(
         seen.level[place.key] = last.level;
       }
       const peak = peakOf(place);
-      const alert = detectForecastAlert(first ? undefined : (seen.forecast[place.key] ?? null), peak);
+      const alert = detectForecastAlert(
+        first ? undefined : (seen.forecast[place.key] ?? null),
+        peak,
+      );
       seen.forecast[place.key] = alert.next;
       if (alert.fire) {
         events.push({
@@ -589,7 +592,7 @@ function createApp(
           if (!mayRequest(usage(), user)) {
             break;
           }
-          let answered = false;
+          let answered;
           try {
             await readPlace(place);
             answered = true;

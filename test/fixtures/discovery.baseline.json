@@ -1,0 +1,486 @@
+{
+  "devices": {
+    "house": {
+      "external_id": "ext:airly:place:house-main-house",
+      "should_poll": false,
+      "params": ["AIRLY_HOUSE", "AIRLY_MODE"],
+      "features": [
+        {
+          "external_id": "ext:airly:place:house-main-house:caqi",
+          "category": "airquality-sensor",
+          "type": "aqi",
+          "unit": "aqi",
+          "min": 0,
+          "max": 500,
+          "read_only": true,
+          "has_feedback": false
+        },
+        {
+          "external_id": "ext:airly:place:house-main-house:level",
+          "category": "text",
+          "type": "text",
+          "min": 0,
+          "max": 0,
+          "read_only": true,
+          "has_feedback": false
+        },
+        {
+          "external_id": "ext:airly:place:house-main-house:pm25",
+          "category": "pm25-sensor",
+          "type": "decimal",
+          "unit": "microgram-per-cubic-meter",
+          "min": 0,
+          "max": 1000,
+          "read_only": true,
+          "has_feedback": false
+        },
+        {
+          "external_id": "ext:airly:place:house-main-house:pm10",
+          "category": "pm10-sensor",
+          "type": "decimal",
+          "unit": "microgram-per-cubic-meter",
+          "min": 0,
+          "max": 2000,
+          "read_only": true,
+          "has_feedback": false
+        },
+        {
+          "external_id": "ext:airly:place:house-main-house:forecast_caqi",
+          "category": "airquality-sensor",
+          "type": "aqi",
+          "unit": "aqi",
+          "min": 0,
+          "max": 500,
+          "read_only": true,
+          "has_feedback": false
+        },
+        {
+          "external_id": "ext:airly:place:house-main-house:forecast",
+          "category": "text",
+          "type": "text",
+          "min": 0,
+          "max": 0,
+          "read_only": true,
+          "has_feedback": false
+        }
+      ]
+    },
+    "sensor": {
+      "external_id": "ext:airly:place:installation-204",
+      "should_poll": false,
+      "params": ["AIRLY_INSTALLATION_ID"],
+      "features": [
+        {
+          "external_id": "ext:airly:place:installation-204:caqi",
+          "category": "airquality-sensor",
+          "type": "aqi",
+          "unit": "aqi",
+          "min": 0,
+          "max": 500,
+          "read_only": true,
+          "has_feedback": false
+        },
+        {
+          "external_id": "ext:airly:place:installation-204:level",
+          "category": "text",
+          "type": "text",
+          "min": 0,
+          "max": 0,
+          "read_only": true,
+          "has_feedback": false
+        },
+        {
+          "external_id": "ext:airly:place:installation-204:pm25",
+          "category": "pm25-sensor",
+          "type": "decimal",
+          "unit": "microgram-per-cubic-meter",
+          "min": 0,
+          "max": 1000,
+          "read_only": true,
+          "has_feedback": false
+        },
+        {
+          "external_id": "ext:airly:place:installation-204:pm10",
+          "category": "pm10-sensor",
+          "type": "decimal",
+          "unit": "microgram-per-cubic-meter",
+          "min": 0,
+          "max": 2000,
+          "read_only": true,
+          "has_feedback": false
+        },
+        {
+          "external_id": "ext:airly:place:installation-204:temperature",
+          "category": "temperature-sensor",
+          "type": "decimal",
+          "unit": "celsius",
+          "min": -60,
+          "max": 60,
+          "read_only": true,
+          "has_feedback": false
+        },
+        {
+          "external_id": "ext:airly:place:installation-204:humidity",
+          "category": "humidity-sensor",
+          "type": "decimal",
+          "unit": "percent",
+          "min": 0,
+          "max": 100,
+          "read_only": true,
+          "has_feedback": false
+        },
+        {
+          "external_id": "ext:airly:place:installation-204:pressure",
+          "category": "pressure-sensor",
+          "type": "decimal",
+          "unit": "hPa",
+          "min": 800,
+          "max": 1100,
+          "read_only": true,
+          "has_feedback": false
+        },
+        {
+          "external_id": "ext:airly:place:installation-204:no2",
+          "category": "no2-sensor",
+          "type": "decimal",
+          "unit": "microgram-per-cubic-meter",
+          "min": 0,
+          "max": 2000,
+          "read_only": true,
+          "has_feedback": false
+        },
+        {
+          "external_id": "ext:airly:place:installation-204:o3",
+          "category": "o3-sensor",
+          "type": "decimal",
+          "unit": "microgram-per-cubic-meter",
+          "min": 0,
+          "max": 2000,
+          "read_only": true,
+          "has_feedback": false
+        },
+        {
+          "external_id": "ext:airly:place:installation-204:so2",
+          "category": "so2-sensor",
+          "type": "decimal",
+          "unit": "microgram-per-cubic-meter",
+          "min": 0,
+          "max": 2000,
+          "read_only": true,
+          "has_feedback": false
+        },
+        {
+          "external_id": "ext:airly:place:installation-204:forecast_caqi",
+          "category": "airquality-sensor",
+          "type": "aqi",
+          "unit": "aqi",
+          "min": 0,
+          "max": 500,
+          "read_only": true,
+          "has_feedback": false
+        },
+        {
+          "external_id": "ext:airly:place:installation-204:forecast",
+          "category": "text",
+          "type": "text",
+          "min": 0,
+          "max": 0,
+          "read_only": true,
+          "has_feedback": false
+        }
+      ]
+    }
+  },
+  "manifest": {
+    "actions": ["read_now", "diagnostic"],
+    "config_schema": [
+      {
+        "key": "intro",
+        "type": "section"
+      },
+      {
+        "key": "api_key",
+        "type": "secret"
+      },
+      {
+        "key": "places",
+        "type": "section"
+      },
+      {
+        "key": "house_1",
+        "type": "select"
+      },
+      {
+        "key": "installation_1",
+        "type": "string"
+      },
+      {
+        "key": "place_2_section",
+        "type": "section"
+      },
+      {
+        "key": "house_2",
+        "type": "select"
+      },
+      {
+        "key": "installation_2",
+        "type": "string"
+      },
+      {
+        "key": "place_3_section",
+        "type": "section"
+      },
+      {
+        "key": "house_3",
+        "type": "select"
+      },
+      {
+        "key": "installation_3",
+        "type": "string"
+      },
+      {
+        "key": "options",
+        "type": "section"
+      },
+      {
+        "key": "house_mode",
+        "type": "select"
+      },
+      {
+        "key": "language",
+        "type": "select"
+      }
+    ],
+    "scene_triggers": [
+      {
+        "key": "air_quality_changed",
+        "fields": [
+          {
+            "key": "place",
+            "options": []
+          },
+          {
+            "key": "level",
+            "options": ["very_low", "low", "medium", "high", "very_high"]
+          },
+          {
+            "key": "direction",
+            "options": ["worse", "better"]
+          }
+        ],
+        "variables": [
+          {
+            "key": "place",
+            "type": "string"
+          },
+          {
+            "key": "name",
+            "type": "string"
+          },
+          {
+            "key": "caqi",
+            "type": "number"
+          },
+          {
+            "key": "level",
+            "type": "string"
+          },
+          {
+            "key": "level_name",
+            "type": "string"
+          },
+          {
+            "key": "previous_level",
+            "type": "string"
+          },
+          {
+            "key": "direction",
+            "type": "string"
+          },
+          {
+            "key": "pm25",
+            "type": "number"
+          },
+          {
+            "key": "pm10",
+            "type": "number"
+          }
+        ]
+      },
+      {
+        "key": "pollution_expected",
+        "fields": [
+          {
+            "key": "place",
+            "options": []
+          },
+          {
+            "key": "level",
+            "options": ["high", "very_high"]
+          }
+        ],
+        "variables": [
+          {
+            "key": "place",
+            "type": "string"
+          },
+          {
+            "key": "name",
+            "type": "string"
+          },
+          {
+            "key": "caqi",
+            "type": "number"
+          },
+          {
+            "key": "level",
+            "type": "string"
+          },
+          {
+            "key": "level_name",
+            "type": "string"
+          },
+          {
+            "key": "time",
+            "type": "string"
+          },
+          {
+            "key": "hours",
+            "type": "number"
+          },
+          {
+            "key": "current_caqi",
+            "type": "number"
+          }
+        ]
+      },
+      {
+        "key": "who_limit_exceeded",
+        "fields": [
+          {
+            "key": "place",
+            "options": []
+          },
+          {
+            "key": "pollutant",
+            "options": ["pm25", "pm10", "no2", "o3"]
+          }
+        ],
+        "variables": [
+          {
+            "key": "place",
+            "type": "string"
+          },
+          {
+            "key": "name",
+            "type": "string"
+          },
+          {
+            "key": "pollutant",
+            "type": "string"
+          },
+          {
+            "key": "pollutant_name",
+            "type": "string"
+          },
+          {
+            "key": "value",
+            "type": "number"
+          },
+          {
+            "key": "limit",
+            "type": "number"
+          },
+          {
+            "key": "percent",
+            "type": "number"
+          }
+        ]
+      }
+    ],
+    "scene_actions": [
+      {
+        "key": "get_air_quality",
+        "fields": ["place"],
+        "outputs": [
+          {
+            "key": "name",
+            "type": "string"
+          },
+          {
+            "key": "caqi",
+            "type": "number"
+          },
+          {
+            "key": "level",
+            "type": "string"
+          },
+          {
+            "key": "level_name",
+            "type": "string"
+          },
+          {
+            "key": "pm1",
+            "type": "number"
+          },
+          {
+            "key": "pm25",
+            "type": "number"
+          },
+          {
+            "key": "pm10",
+            "type": "number"
+          },
+          {
+            "key": "temperature",
+            "type": "number"
+          },
+          {
+            "key": "humidity",
+            "type": "number"
+          },
+          {
+            "key": "pressure",
+            "type": "number"
+          },
+          {
+            "key": "pm25_who_percent",
+            "type": "number"
+          },
+          {
+            "key": "pm10_who_percent",
+            "type": "number"
+          },
+          {
+            "key": "forecast_caqi",
+            "type": "number"
+          },
+          {
+            "key": "forecast_level",
+            "type": "string"
+          },
+          {
+            "key": "forecast_time",
+            "type": "string"
+          },
+          {
+            "key": "summary",
+            "type": "string"
+          }
+        ]
+      }
+    ],
+    "widgets": [
+      {
+        "key": "air_quality",
+        "settings": ["place"],
+        "options": {}
+      },
+      {
+        "key": "forecast",
+        "settings": ["place"],
+        "options": {}
+      }
+    ]
+  }
+}

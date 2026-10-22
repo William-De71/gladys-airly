@@ -5,25 +5,24 @@
 // saved configuration refers to.
 //
 // test/fixtures/discovery.baseline.json was generated from version 0.1.0 (the
-// first release). A failure here means existing users would have to delete
+// first release; `UPDATE_BASELINE=1` rewrites it, only with a documented migration). A failure here means existing users would have to delete
 // and recreate a device, or would lose a scene or a widget setting: never
 // update the baseline without a documented migration.
 // -----------------------------------------------------------------------------
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
 
-import { buildPlaceDevice } from '../src/device.js';
+import { buildPlaceDevice, OPTIONAL_KEYS } from '../src/device.js';
 import { LANGUAGES } from '../src/i18n.js';
 
 const read = (path) => JSON.parse(readFileSync(new URL(path, import.meta.url), 'utf8'));
-const baseline = read('./fixtures/discovery.baseline.json');
 const manifest = read('../gladys-assistant-integration.json');
 const fakeGladys = {
   externalIds: (type, id) => ({
-    device: `ext:airnow:${type}:${id}`,
-    feature: (key) => `ext:airnow:${type}:${id}:${key}`,
+    device: `ext:airly:${type}:${id}`,
+    feature: (key) => `ext:airly:${type}:${id}:${key}`,
   }),
 };
 
@@ -57,17 +56,73 @@ const shape = (device) => ({
  * @returns {object} The devices, by kind.
  */
 const devices = (language) => ({
-  zip: buildPlaceDevice(
-    fakeGladys,
-    { key: 'zip-90210', zip: '90210', house: null, area: 'NW Coastal LA' },
-    language,
-  ),
+  // A house read at its location, before any reading: the features always offered.
   house: buildPlaceDevice(
     fakeGladys,
-    { key: 'house-main-house', zip: null, house: 'main-house', area: 'Napa' },
+    {
+      key: 'house-main-house',
+      installationId: null,
+      house: 'main-house',
+      mode: 'point',
+      name: 'Home',
+    },
+    language,
+  ),
+  // A sensor that gave every optional value: every feature there can be.
+  sensor: buildPlaceDevice(
+    fakeGladys,
+    {
+      key: 'installation-204',
+      installationId: 204,
+      house: null,
+      name: 'Kraków',
+      features: OPTIONAL_KEYS,
+    },
     language,
   ),
 });
+
+/**
+ * @description What users store today: the baseline, as the code and the manifest give it.
+ * @returns {object} `{ devices, manifest }`.
+ */
+const current = () => ({
+  devices: Object.fromEntries(
+    Object.entries(devices('en')).map(([kind, device]) => [kind, shape(device)]),
+  ),
+  manifest: {
+    actions: keys(manifest.actions),
+    config_schema: manifest.config_schema.map(({ key, type }) => ({ key, type })),
+    scene_triggers: manifest.scene_triggers.map((trigger) => ({
+      key: trigger.key,
+      fields: trigger.fields.map((field) => ({
+        key: field.key,
+        options: (field.options ?? []).map((option) => option.value),
+      })),
+      variables: trigger.variables.map(({ key, type }) => ({ key, type })),
+    })),
+    scene_actions: manifest.scene_actions.map((action) => ({
+      key: action.key,
+      fields: keys(action.fields),
+      outputs: action.outputs.map(({ key, type }) => ({ key, type })),
+    })),
+    widgets: manifest.widgets.map((widget) => ({
+      key: widget.key,
+      settings: keys(widget.settings),
+      options: Object.fromEntries(
+        (widget.settings ?? [])
+          .filter((setting) => setting.options)
+          .map((setting) => [setting.key, setting.options.map((option) => option.value)]),
+      ),
+    })),
+  },
+});
+
+const BASELINE = new URL('./fixtures/discovery.baseline.json', import.meta.url);
+if (process.env.UPDATE_BASELINE === '1') {
+  writeFileSync(BASELINE, `${JSON.stringify(current(), null, 2)}\n`);
+}
+const baseline = JSON.parse(readFileSync(BASELINE, 'utf8'));
 
 test('the devices keep their external ids and the fields Discovery compares, in every language', () => {
   for (const language of LANGUAGES) {

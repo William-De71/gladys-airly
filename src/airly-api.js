@@ -159,7 +159,7 @@ function createAirlyClient({
     }
     const body = await response.text();
     if (!response.ok) {
-      let message = '';
+      let message;
       try {
         message = String(JSON.parse(body)?.message ?? '');
       } catch {

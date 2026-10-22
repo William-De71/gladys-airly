@@ -1,31 +1,43 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { normalizeConfig, readZip, readLanguage } from '../src/config.js';
+import { normalizeConfig, readInstallationId, readLanguage } from '../src/config.js';
 
-test('places: a ZIP code wins over a house; empty slots are left out', () => {
+test('places: a sensor wins over a house; empty slots are left out', () => {
   assert.deepEqual(
-    normalizeConfig({ api_key: ' k ', zip_1: '90210', house_1: 'home', house_3: 'cabin' }),
+    normalizeConfig({
+      api_key: ' k ',
+      installation_1: '204',
+      house_1: 'home',
+      house_3: 'cabin',
+      house_mode: 'nearest',
+    }),
     {
       apiKey: 'k',
       places: [
-        { slot: 1, zip: '90210', house: null, invalidZip: null },
-        { slot: 3, zip: null, house: 'cabin', invalidZip: null },
+        { slot: 1, installationId: 204, house: null, invalidInstallation: null },
+        { slot: 3, installationId: null, house: 'cabin', invalidInstallation: null },
       ],
+      houseMode: 'nearest',
       language: 'auto',
     },
   );
+  assert.equal(normalizeConfig({ house_mode: 'other' }).houseMode, 'point');
+  assert.equal(normalizeConfig(null).apiKey, '');
 });
 
-test('ZIP codes as users type them', () => {
-  assert.equal(readZip('02115-4402'), '02115');
-  assert.equal(readZip('021154402'), '02115');
-  assert.equal(readZip(2115), '02115', 'a number loses its leading 0');
-  assert.equal(readZip('9021'), null);
-  assert.equal(readZip('H0H 0H0'), null);
-  assert.deepEqual(normalizeConfig({ zip_2: 'abc' }).places, [
-    { slot: 2, zip: null, house: null, invalidZip: 'abc' },
+test('sensor numbers as users type or paste them', () => {
+  assert.equal(readInstallationId('204'), 204);
+  assert.equal(readInstallationId(8077), 8077);
+  assert.equal(readInstallationId(' i8077 '), 8077);
+  assert.equal(readInstallationId('https://airly.org/map/en/#50.06,19.94,i8077'), 8077);
+  assert.equal(readInstallationId('https://airly.org/map/en/#50.06,19.94'), null);
+  assert.equal(readInstallationId('0'), null);
+  assert.equal(readInstallationId('Kraków'), null);
+  assert.deepEqual(normalizeConfig({ installation_2: 'abc' }).places, [
+    { slot: 2, installationId: null, house: null, invalidInstallation: 'abc' },
   ]);
   assert.equal(readLanguage({ last_language: 'es' }, 'en'), 'es');
+  assert.equal(readLanguage({ last_language: 'xx-yy' }, 'en'), 'en');
   assert.equal(normalizeConfig({ language: 'de' }).language, 'de');
 });

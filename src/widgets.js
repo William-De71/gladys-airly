@@ -111,17 +111,14 @@ function messageContent(message, { ttl = TTL_SECONDS.message, refresh = false } 
  * @returns {object} The text component.
  */
 function caption(place, reading, { language, timeZone }) {
+  // The source and the hour always show: a long place name gives way.
+  const tail = ` · ${t('measuredAt', language, {
+    time: formatTime(reading.at, { language, timeZone }),
+  })} · Airly`;
   return {
     type: 'text',
     variant: 'caption',
-    text: clip(
-      [
-        place.name,
-        t('measuredAt', language, { time: formatTime(reading.at, { language, timeZone }) }),
-        'Airly',
-      ].join(' · '),
-      80,
-    ),
+    text: `${clip(place.name, 80 - tail.length)}${tail}`,
   };
 }
 

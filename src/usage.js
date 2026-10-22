@@ -48,7 +48,8 @@ function usageOf(usage, now) {
  * @param {object} usage - The usage of today.
  * @returns {number} Requests a day.
  */
-const limitOf = (usage) => (Number.isInteger(usage?.limit) && usage.limit > 0 ? usage.limit : DEFAULT_LIMIT);
+const limitOf = (usage) =>
+  Number.isInteger(usage?.limit) && usage.limit > 0 ? usage.limit : DEFAULT_LIMIT;
 
 /**
  * @description What remains today: Airly's count when known, never more than ours.

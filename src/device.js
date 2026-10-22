@@ -125,7 +125,14 @@ const FEATURES = [
     peak: true,
     state: (r, peak) => peak?.caqi ?? null,
   },
-  { key: 'forecast', name: 'featureForecast', shape: textShape, always: true, text: true, peak: true },
+  {
+    key: 'forecast',
+    name: 'featureForecast',
+    shape: textShape,
+    always: true,
+    text: true,
+    peak: true,
+  },
 ];
 const FEATURE_KEYS = FEATURES.map((feature) => feature.key);
 const OPTIONAL_KEYS = FEATURES.filter((feature) => !feature.always).map((feature) => feature.key);
