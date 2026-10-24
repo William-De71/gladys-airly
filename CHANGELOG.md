@@ -5,6 +5,12 @@ follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions
 follow [Semantic Versioning](https://semver.org/). This file is generated at
 each release from the Conventional Commits: do not edit it by hand.
 
+## [0.1.1] - 2026-10-24
+
+### Security
+
+- **security:** build the image on Node.js 24.22.1 or later ([760edd9](https://github.com/William-De71/gladys-airly/commit/760edd9be94e7d44f678fbf5cc7aad6de3d835d0))
+
 ## [0.1.0] - 2026-10-22
 
 ### Added
@@ -18,4 +24,5 @@ each release from the Conventional Commits: do not edit it by hand.
 - Cloud transport: every place read in one round, as often as the daily limit of the key allows (every 30 to 50 minutes with a free key), a reserve kept for the user, readings kept in /data.
 - English, French, German and Spanish everywhere: settings, devices, widgets, scenes and documentation.
 
+[0.1.1]: https://github.com/William-De71/gladys-airly/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/William-De71/gladys-airly/releases/tag/v0.1.0
