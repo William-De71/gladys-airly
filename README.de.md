@@ -5,7 +5,7 @@
 [![Lizenz: Apache-2.0](https://img.shields.io/badge/Lizenz-Apache--2.0-blue.svg)](LICENSE)
 [![Neueste Version](https://img.shields.io/github/v/release/William-De71/gladys-airly?sort=semver)](https://github.com/William-De71/gladys-airly/releases)
 [![CI](https://img.shields.io/github/actions/workflow/status/William-De71/gladys-airly/release.yml?branch=main&label=CI)](https://github.com/William-De71/gladys-airly/actions/workflows/release.yml)
-[![Gladys](https://img.shields.io/badge/Gladys-%E2%89%A5%205.2.0-2f6fb5)](https://gladysassistant.com)
+[![Gladys](https://img.shields.io/badge/Gladys-%E2%89%A5%205.3.0-2f6fb5)](https://gladysassistant.com)
 
 ![Airly für Gladys Assistant](cover.jpg)
 
@@ -93,7 +93,7 @@ Ein Gerät pro Ort, `should_poll: false`. Ein Wert, den Airly nicht geliefert ha
 
 ## Voraussetzungen
 
-- Gladys Assistant **5.2.0** oder neuer (die Hausauswahl). Ältere Instanzen können die Integration nicht installieren.
+- Gladys Assistant **5.3.0** oder neuer (Suchbegriffe und Länder des Katalogs, die Hausauswahl). Ältere Instanzen können die Integration nicht installieren.
 - Ein kostenloser Airly-API-Schlüssel: lege ein Konto im [Entwicklerportal von Airly](https://developer.airly.org/en) an und kopiere den Schlüssel des kostenlosen Tarifs (siehe [docs/de.md](docs/de.md#einen-api-schlüssel-erhalten)).
 - Orte, die von Airly-Sensoren abgedeckt sind (siehe die [Airly-Karte](https://airly.org/map/en/)).
 

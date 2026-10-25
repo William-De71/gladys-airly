@@ -10,7 +10,7 @@ The CAQI goes from 0 to 100 and beyond: very good (0-25), good (25-50), moderate
 
 ## Prerequisites
 
-- Gladys Assistant **5.2.0** or later (the house picker of the configuration). Older instances cannot install the integration.
+- Gladys Assistant **5.3.0** or later (catalog keywords and countries, the house picker of the configuration). Older instances cannot install the integration.
 - A free Airly API key (below).
 - A place covered by Airly: a house with Airly sensors within a few kilometres (the Airly map shows them), or the number of a sensor.
 

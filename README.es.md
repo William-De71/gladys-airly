@@ -5,7 +5,7 @@
 [![Licencia: Apache-2.0](https://img.shields.io/badge/licencia-Apache--2.0-blue.svg)](LICENSE)
 [![Última versión](https://img.shields.io/github/v/release/William-De71/gladys-airly?sort=semver)](https://github.com/William-De71/gladys-airly/releases)
 [![CI](https://img.shields.io/github/actions/workflow/status/William-De71/gladys-airly/release.yml?branch=main&label=CI)](https://github.com/William-De71/gladys-airly/actions/workflows/release.yml)
-[![Gladys](https://img.shields.io/badge/Gladys-%E2%89%A5%205.2.0-2f6fb5)](https://gladysassistant.com)
+[![Gladys](https://img.shields.io/badge/Gladys-%E2%89%A5%205.3.0-2f6fb5)](https://gladysassistant.com)
 
 ![Airly para Gladys Assistant](cover.jpg)
 
@@ -93,7 +93,7 @@ Un dispositivo por lugar, `should_poll: false`. Un valor que Airly no dio no se 
 
 ## Requisitos
 
-- Gladys Assistant **5.2.0** o posterior (el selector de casa). Las instancias más antiguas no pueden instalar la integración.
+- Gladys Assistant **5.3.0** o posterior (palabras clave y países del catálogo, el selector de casa). Las instancias más antiguas no pueden instalar la integración.
 - Una clave de API de Airly gratuita: cree una cuenta en el [portal para desarrolladores de Airly](https://developer.airly.org/en) y copie la clave del plan gratuito (ver [docs/es.md](docs/es.md#obtener-una-clave-de-api)).
 - Lugares cubiertos por sensores Airly (ver el [mapa de Airly](https://airly.org/map/en/)).
 

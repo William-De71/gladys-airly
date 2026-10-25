@@ -5,7 +5,7 @@
 [![Licence : Apache-2.0](https://img.shields.io/badge/licence-Apache--2.0-blue.svg)](LICENSE)
 [![Dernière version](https://img.shields.io/github/v/release/William-De71/gladys-airly?sort=semver)](https://github.com/William-De71/gladys-airly/releases)
 [![CI](https://img.shields.io/github/actions/workflow/status/William-De71/gladys-airly/release.yml?branch=main&label=CI)](https://github.com/William-De71/gladys-airly/actions/workflows/release.yml)
-[![Gladys](https://img.shields.io/badge/Gladys-%E2%89%A5%205.2.0-2f6fb5)](https://gladysassistant.com)
+[![Gladys](https://img.shields.io/badge/Gladys-%E2%89%A5%205.3.0-2f6fb5)](https://gladysassistant.com)
 
 ![Airly pour Gladys Assistant](cover.jpg)
 
@@ -93,7 +93,7 @@ Un appareil par lieu, `should_poll: false`. Une valeur qu’Airly n’a pas donn
 
 ## Prérequis
 
-- Gladys Assistant **5.2.0** ou plus récent (le sélecteur de maison). Les instances plus anciennes ne peuvent pas installer l’intégration.
+- Gladys Assistant **5.3.0** ou plus récent (mots-clés et pays du catalogue, le sélecteur de maison). Les instances plus anciennes ne peuvent pas installer l’intégration.
 - Une clé d’API Airly gratuite : créez un compte sur le [portail développeur d’Airly](https://developer.airly.org/en) et copiez la clé de l’offre gratuite (voir [docs/fr.md](docs/fr.md#obtenir-une-clé-dapi)).
 - Des lieux couverts par des capteurs Airly (voir la [carte Airly](https://airly.org/map/en/)).
 

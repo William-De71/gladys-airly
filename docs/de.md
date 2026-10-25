@@ -10,7 +10,7 @@ Der CAQI reicht von 0 bis 100 und darüber: sehr gut (0-25), gut (25-50), mäßi
 
 ## Voraussetzungen
 
-- Gladys Assistant **5.2.0** oder neuer (die Hausauswahl der Konfiguration). Ältere Instanzen können die Integration nicht installieren.
+- Gladys Assistant **5.3.0** oder neuer (Suchbegriffe und Länder des Katalogs, die Hausauswahl der Konfiguration). Ältere Instanzen können die Integration nicht installieren.
 - Ein kostenloser Airly-API-Schlüssel (siehe unten).
 - Ein von Airly abgedeckter Ort: ein Haus mit Airly-Sensoren im Umkreis weniger Kilometer (die Airly-Karte zeigt sie) oder die Nummer eines Sensors.
 
